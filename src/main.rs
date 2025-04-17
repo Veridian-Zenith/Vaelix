@@ -7,5 +7,7 @@ mod storage;
 
 fn main() {
     println!("Welcome to Vaelix! Initializing browser...");
-    // Initialize components here
+
+    // Initialize the UI
+    ui::initialize_ui();
 }

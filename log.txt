@@ -1,0 +1,199 @@
+   Compiling cfg-if v1.0.0
+   Compiling xml-rs v0.8.26
+   Compiling libc v0.2.172
+   Compiling proc-macro2 v1.0.95
+   Compiling unicode-ident v1.0.18
+   Compiling pkg-config v0.3.32
+   Compiling log v0.4.27
+   Compiling once_cell v1.21.3
+   Compiling khronos_api v3.1.0
+   Compiling autocfg v1.4.0
+   Compiling bitflags v1.3.2
+   Compiling libloading v0.8.6
+   Compiling shlex v1.3.0
+   Compiling lazy_static v1.5.0
+   Compiling smallvec v1.15.0
+   Compiling cc v1.2.19
+   Compiling dlib v0.5.2
+   Compiling simd-adler32 v0.3.7
+   Compiling memoffset v0.6.5
+   Compiling version_check v0.9.5
+   Compiling wayland-sys v0.29.5
+   Compiling downcast-rs v1.2.1
+   Compiling scoped-tls v1.0.1
+   Compiling gl_generator v0.14.0
+   Compiling adler2 v2.0.0
+   Compiling quote v1.0.40
+   Compiling slotmap v1.0.7
+   Compiling thiserror v1.0.69
+   Compiling wayland-scanner v0.29.5
+   Compiling syn v2.0.100
+   Compiling miniz_oxide v0.8.8
+   Compiling x11-dl v2.21.0
+   Compiling crc32fast v1.4.2
+   Compiling smithay-client-toolkit v0.16.1
+   Compiling fdeflate v0.3.7
+   Compiling strict-num v0.1.1
+   Compiling flate2 v1.1.1
+   Compiling arrayref v0.3.9
+   Compiling ttf-parser v0.25.1
+   Compiling vec_map v0.8.2
+   Compiling bytemuck v1.22.0
+   Compiling wayland-client v0.29.5
+   Compiling nix v0.24.3
+   Compiling ring v0.17.14
+   Compiling wayland-protocols v0.29.5
+   Compiling ring v0.16.20
+   Compiling getrandom v0.2.15
+   Compiling nix v0.25.1
+   Compiling untrusted v0.9.0
+   Compiling xcursor v0.3.8
+   Compiling tiny-skia-path v0.8.4
+   Compiling thiserror-impl v1.0.69
+   Compiling wayland-commons v0.29.5
+   Compiling png v0.17.16
+   Compiling owned_ttf_parser v0.25.0
+   Compiling memmap2 v0.5.10
+   Compiling glutin_egl_sys v0.7.1
+   Compiling glutin_glx_sys v0.6.1
+   Compiling calloop v0.10.6
+   Compiling wayland-sys v0.31.6
+   Compiling arrayvec v0.7.6
+   Compiling ab_glyph_rasterizer v0.1.8
+   Compiling cfg_aliases v0.1.1
+   Compiling cfg_aliases v0.2.1
+   Compiling glutin v0.32.2
+   Compiling winit v0.28.7
+   Compiling tiny-skia v0.8.4
+   Compiling ab_glyph v0.2.29
+   Compiling gl v0.14.0
+   Compiling wayland-cursor v0.29.5
+   Compiling spin v0.5.2
+   Compiling serde v1.0.219
+   Compiling rustls v0.20.9
+   Compiling untrusted v0.7.1
+   Compiling sct v0.7.1
+   Compiling webpki v0.22.4
+   Compiling serde_derive v1.0.219
+   Compiling mio v0.8.11
+   Compiling instant v0.1.13
+   Compiling raw-window-handle v0.5.2
+   Compiling percent-encoding v2.3.1
+   Compiling raw-window-handle v0.6.2
+   Compiling bitflags v2.9.0
+   Compiling sctk-adwaita v0.5.4
+   Compiling vaelix v0.1.0 (/home/dae/Veridian-Zenith/Vaelix)
+warning: unused import: `Config`
+ --> src/ui/mod.rs:6:22
+  |
+6 | use glutin::config::{Config, ConfigTemplateBuilder};
+  |                      ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `PossiblyCurrentContext`
+ --> src/ui/mod.rs:7:61
+  |
+7 | use glutin::context::{ContextApi, ContextAttributesBuilder, PossiblyCurrentContext, Version};
+  |                                                             ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Surface`
+  --> src/ui/mod.rs:10:23
+   |
+10 | use glutin::surface::{Surface, SurfaceAttributesBuilder, WindowSurface};
+   |                       ^^^^^^^
+
+error[E0599]: no variant or associated item named `Default` found for enum `DisplayApiPreference` in the current scope
+  --> src/ui/mod.rs:35:63
+   |
+35 |         Display::new(raw_window_handle, DisplayApiPreference::Default).unwrap()
+   |                                                               ^^^^^^^ variant or associated item not found in `DisplayApiPreference`
+
+error[E0308]: mismatched types
+   --> src/ui/mod.rs:35:22
+    |
+35  |         Display::new(raw_window_handle, DisplayApiPreference::Default).unwrap()
+    |         ------------ ^^^^^^^^^^^^^^^^^ expected `RawDisplayHandle`, found `RawWindowHandle`
+    |         |
+    |         arguments to this function are incorrect
+    |
+note: associated function defined here
+   --> /home/dae/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.32.2/src/display.rs:210:19
+    |
+210 |     pub unsafe fn new(display: RawDisplayHandle, preference: DisplayApiPreference) -> Result<Self> {
+    |                   ^^^
+
+error[E0308]: mismatched types
+   --> src/ui/mod.rs:45:21
+    |
+45  |         .build(Some(raw_window_handle));
+    |                ---- ^^^^^^^^^^^^^^^^^ expected `raw_window_handle::RawWindowHandle`, found `RawWindowHandle`
+    |                |
+    |                arguments to this enum variant are incorrect
+    |
+note: two different versions of crate `raw_window_handle` are being used; two types coming from two different versions of the same crate are different types even if they look the same
+   --> /home/dae/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/raw-window-handle-0.6.2/src/lib.rs:113:1
+    |
+113 | pub enum RawWindowHandle {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected type `raw_window_handle::RawWindowHandle`
+    |
+   ::: /home/dae/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/raw-window-handle-0.5.2/src/lib.rs:123:1
+    |
+123 | pub enum RawWindowHandle {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the found type `RawWindowHandle`
+    |
+   ::: src/ui/mod.rs:3:1
+    |
+3   | extern crate glutin;
+    | -------------------- one version of crate `raw_window_handle` used here, as a dependency of crate `glutin`
+...
+11  | use raw_window_handle::HasRawWindowHandle;
+    |     ----------------- one version of crate `raw_window_handle` used here, as a direct dependency of the current crate
+    = help: you can use `cargo tree` to explore your dependency tree
+help: the type constructed contains `RawWindowHandle` due to the type of the argument passed
+   --> src/ui/mod.rs:45:16
+    |
+45  |         .build(Some(raw_window_handle));
+    |                ^^^^^-----------------^
+    |                     |
+    |                     this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /usr/src/debug/rust/rustc-1.86.0-src/library/core/src/option.rs:580:5
+
+error[E0308]: mismatched types
+   --> src/ui/mod.rs:50:9
+    |
+49  |     let surface_attributes = SurfaceAttributesBuilder::<WindowSurface>::new().build(
+    |                                                                               ----- arguments to this method are incorrect
+50  |         raw_window_handle,
+    |         ^^^^^^^^^^^^^^^^^ expected `raw_window_handle::RawWindowHandle`, found `RawWindowHandle`
+    |
+note: two different versions of crate `raw_window_handle` are being used; two types coming from two different versions of the same crate are different types even if they look the same
+   --> /home/dae/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/raw-window-handle-0.6.2/src/lib.rs:113:1
+    |
+113 | pub enum RawWindowHandle {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected type `raw_window_handle::RawWindowHandle`
+    |
+   ::: /home/dae/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/raw-window-handle-0.5.2/src/lib.rs:123:1
+    |
+123 | pub enum RawWindowHandle {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the found type `RawWindowHandle`
+    |
+   ::: src/ui/mod.rs:3:1
+    |
+3   | extern crate glutin;
+    | -------------------- one version of crate `raw_window_handle` used here, as a dependency of crate `glutin`
+...
+11  | use raw_window_handle::HasRawWindowHandle;
+    |     ----------------- one version of crate `raw_window_handle` used here, as a direct dependency of the current crate
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /home/dae/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/glutin-0.32.2/src/surface.rs:152:12
+    |
+152 |     pub fn build(
+    |            ^^^^^
+
+Some errors have detailed explanations: E0308, E0599.
+For more information about an error, try `rustc --explain E0308`.
+warning: `vaelix` (bin "vaelix") generated 3 warnings
+error: could not compile `vaelix` (bin "vaelix") due to 4 previous errors; 3 warnings emitted
