@@ -10,6 +10,11 @@ Please note that this project is released with a Contributor Code of Conduct. By
 
 ### Reporting Bugs
 
+I ask of you, contributor, to inform me, @daedaevibin, before you submit pull request so I may clean and upload my workspace beforehand if required. Thank you.
+Contact info below:
+daedaevibin@naver.com
++1 (208) 464-4061
+
 1. **Search the issue tracker** to see if the issue has already been reported.
 2. If the issue has not been reported, open a new issue. Be sure to include a title and clear description, as much relevant information as possible, and a code sample or an executable test case demonstrating the expected behavior that is not occurring.
 
