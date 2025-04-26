@@ -4,9 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-raw-window-handle = "0.5"
-glutin = "0.32"
-winit = "0.28"
-gl = "0.14.0"
+dioxus = "0.3.2"
+web-view = "0.7.3"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
-rustls = "0.20"
+serde_json = "1.0"
+aes = "0.8.0"
+block-modes = "0.9.1"
+block-padding = "0.3.0"
+hex = "0.4.3"
+hex-literal = "0.4.1"
+rand = "0.8.5"
+sha2 = "0.10.8"
