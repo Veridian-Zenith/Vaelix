@@ -1,0 +1,4 @@
+[profile]
+name = "default"
+storage = "ephemeral"
+encryption = "argon2+nacl"
