@@ -1,2 +1,13 @@
-Cargo.lock
-/target
+.vbuild/
+build/
+*.swp
+*.tmp
+*.log
+*.bak
+*.old
+*.cache
+.cache/
+__pycache__/
+node_modules/
+.DS_Store
+
