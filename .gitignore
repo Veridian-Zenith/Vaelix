@@ -1,13 +1,12 @@
-.vbuild/
-build/
-*.swp
-*.tmp
-*.log
-*.bak
-*.old
-*.cache
-.cache/
-__pycache__/
-node_modules/
+
+/target
+**/*.rs.bk
+Cargo.lock
 .DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp
+*.swp
+node_modules/
 

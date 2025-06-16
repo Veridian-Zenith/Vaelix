@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "tiamat-core",
+    "vaelix-shell",
+    "vaelix-ui",
+    "vaelix-law",
+    "vaelix-privacy"
+]
+resolver = "2"
+

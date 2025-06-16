@@ -1,0 +1,36 @@
+[package]
+name = "tiamat-core"
+version = "0.1.0"
+edition = "2024"
+authors = ["Dae Euhwa <daedaevibin@proton.me>"]
+description = """
+The core rendering and processing engine for the Vaelix browser.
+Handles HTML/CSS parsing, layout calculation, and rendering.
+Part of Phase 1 implementation (June 2025).
+"""
+
+[dependencies]
+# HTML/CSS parsing
+html5ever = "*"
+markup5ever = "*"
+markup5ever_rcdom = "*"
+cssparser = "*"
+
+# Networking
+reqwest = { version = "*", features = ["json", "rustls-tls"] }
+tokio = { version = "*", features = ["full"] }
+hyper = "*"
+tungstenite = "*"
+
+# Utils
+log = "*"
+thiserror = "*"
+futures = "*"
+async-trait = "*"
+
+[features]
+default = ["http1", "http2"]
+http1 = []
+http2 = ["reqwest/http2"]
+http3 = ["quinn"]
+websocket = ["tungstenite"]
