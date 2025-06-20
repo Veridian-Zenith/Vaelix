@@ -7,4 +7,3 @@ members = [
     "vaelix-privacy"
 ]
 resolver = "2"
-

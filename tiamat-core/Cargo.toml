@@ -20,7 +20,8 @@ cssparser = "*"
 reqwest = { version = "*", features = ["json", "rustls-tls"] }
 tokio = { version = "*", features = ["full"] }
 hyper = "*"
-tungstenite = "*"
+tungstenite = { version = "*", optional = true }
+quinn = { version = "*", optional = true }
 
 # Utils
 log = "*"
