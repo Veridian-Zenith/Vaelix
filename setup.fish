@@ -19,6 +19,7 @@ create_crate "vaelix-shell"
 create_crate "vaelix-ui"
 create_crate "vaelix-law"
 create_crate "vaelix-privacy"
+create_crate "vaelix-ext"
 
 # 2. NOW Add Workspace Cargo.toml
 echo "[workspace]
@@ -27,22 +28,24 @@ members = [
     \"vaelix-shell\",
     \"vaelix-ui\",
     \"vaelix-law\",
-    \"vaelix-privacy\"
+    \"vaelix-privacy\",
+    \"vaelix-ext\"
 ]
 " > Cargo.toml
 
 # 3. Generate README
 echo "# $project_name
 
-**Vaelix** is a full-featured, privacy-first browser powered by the modular **Tiamat Core**.
+**Vaelix** is a fully independent, privacy-first browser engine and UI, built in Rust.
 
 ## Modules
 
-- \`tiamat-core\`: HTML/CSS/rendering engine
-- \`vaelix-shell\`: Tab & navigation controller
-- \`vaelix-ui\`: Interface rendering
-- \`vaelix-law\`: Legal compliance (GDPR/ePrivacy)
-- \`vaelix-privacy\`: Tracker/ad/fingerprint blocking
+- \`tiamat-core\`: HTML/CSS/DOM/rendering/networking/JS engine
+- \`vaelix-shell\`: Tab/session/navigation controller, process isolation
+- \`vaelix-ui\`: UI shell, window management, themes, accessibility
+- \`vaelix-law\`: Legal compliance (GDPR/ePrivacy/DSA/CCPA)
+- \`vaelix-privacy\`: Ad/tracker/fingerprint blocking, shield mode
+- \`vaelix-ext\`: Extension system (Chrome API, native plugins)
 " > README.md
 
 # 4. LICENSE
@@ -80,12 +83,16 @@ echo "pub fn launch_ui() {
 }" > vaelix-ui/src/lib.rs
 
 echo "pub fn enforce_rules() {
-    println!(\"GDPR compliance enabled.\");
+    println!(\"GDPR/ePrivacy/DSA compliance enabled.\");
 }" > vaelix-law/src/lib.rs
 
 echo "pub fn init_shield() {
     println!(\"Privacy shield active.\");
 }" > vaelix-privacy/src/lib.rs
+
+echo "pub fn ext_api() {
+    println!(\"Extension system loaded.\");
+}" > vaelix-ext/src/lib.rs
 
 # 7. Done
 echo "✅ $project_name setup complete. No git involved, and all crates registered cleanly."

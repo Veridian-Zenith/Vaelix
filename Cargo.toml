@@ -4,6 +4,7 @@ members = [
     "vaelix-shell",
     "vaelix-ui",
     "vaelix-law",
-    "vaelix-privacy"
+    "vaelix-privacy",
+    "vaelix-ext"
 ]
-resolver = "2"
+

@@ -1,290 +1,128 @@
-Vaelix Browser Development Plan
-
-Project: Vaelix BrowserStart Date: June 15, 2025, 20:23 (UTC-5)Primary Goal: Develop a fully featured, privacy-first, modular web browser with minimal resource usage and heavy focus on compliance (EU first), privacy, and integration with modern ecosystems (Google, Microsoft, Naver, Chrome Web Store).
-
-I. Core Objectives
-
-Privacy-First Architecture: Blocks ads, telemetry, trackers, and fingerprinting natively.
-
-EU Law Compliance: ePrivacy, GDPR, DSA compliance before US law (CCPA, etc.).
-
-Lightweight: Avoid multi-instance bloat (one engine core, tab-sandboxed via Rust).
-
-Modern Features: Support Chrome extensions, social login APIs (Google/Microsoft/Naver), rich UI.
-
-Modular Design: Tiamat Core powers DOM, rendering, protocol handling.
-
-II. Architectural Modules
-
-1. tiamat-core
-
-DOM tree
-
-CSS box model/layout engine
-
-Renderer (wgpu-powered if GPU is available)
-
-Protocol support (HTTP/1.1, HTTP/2, HTTP/3, WebSocket)
-
-JS engine wrapper (Deno-based or a custom V8 isolate wrapper via Rust FFI)
-
-Caching, cookies, and secure session storage
-
-Engine sandboxing per tab
-
-2. vaelix-shell
-
-Tab/session manager
-
-Back-forward navigation stack
-
-Internal routing & IPC
-
-Download manager, navigation guards
-
-Crash recovery
-
-Local storage database management (SQLite w/ WAL)
-
-3. vaelix-ui
-
-UI toolkit (custom with wgpu/skia via Rust or slint/dioxus)
-
-Interface design: Sidebar tabs, vertical tab option, color themes
-
-Theme engine: Gold/Black/Fuchsia/Purple with Gamja Flower font
-
-Custom window management (Wayland + X11)
-
-Keyboard shortcut & gesture support
-
-4. vaelix-law
-
-GDPR/ePrivacy compliance tools
-
-Permission system for cookies, location, camera, microphone, etc.
-
-Consent manager UI & backend
-
-Tracking transparency panel
-
-Audit logging (exportable JSON/CSV reports)
-
-DNT, GPC, auto EU cookie rejection
-
-5. vaelix-privacy
-
-Native ad/tracker/fingerprint blocking
-
-Blocklists: EasyList, Fanboy, Brave, DuckDuckGo, Disconnect
-
-Anti-canvas, anti-webrtc IP leak, and header-stripping logic
-
-Enhanced protection mode
-
-P2P status for mesh networking (optional)
-
-Shield mode for kiosk/private browsing
-
-III. Platform Integrations
-
-A. Google
-
-Google OAuth2 login API
-
-Drive API (download/view only)
-
-Safe Browsing API (optional toggle)
-
-Sync support for bookmarks/history (optional)
-
-Chrome Web Store registration as a Chromium-compatible engine
-
-User-agent spoofing to mimic Chrome for compatibility
-
-Extension CRX fetch, install, verify
-
-B. Microsoft
-
-Microsoft OAuth2/Graph login
-
-Office 365 viewer integration
-
-OneDrive access
-
-Microsoft Defender SmartScreen (optional, privacy-wrapped)
-
-C. Naver
-
-Naver OpenID login integration
-
-WhaleSync-style tab sync (self-hosted option)
-
-Naver Dictionary & Papago integration widget
-
-Korean font and layout enhancements
-
-IV. Project Timeline & Timestamps
-
-Phase 1 – Project Foundation
-
-Date
-
-Task
-
-June 15-18
-
-Create initial crates and workspace (setup.fish) ✅
-
-June 18-20
-
-Draft README, LICENSE, docs layout ✅
-
-June 20-23
-
-Implement tiamat-core HTML/CSS parser base (Current)
-
-June 23-26
-
-Setup renderer stub + protocol fetch core
-
-Phase 2 – Core Engine Development
-
-Date
-
-Task
-
-June 26-30
-
-Finish HTML tokenizer, DOM builder
-
-July 1-3
-
-Integrate layout engine (Flexbox/basic block model)
-
-July 3-5
-
-Integrate HTTP/2 and WebSocket client support
-
-July 5-8
-
-Basic JS execution loop (Deno or V8 wrapper)
-
-Phase 3 – UI Shell + Basic UI
-
-Date
-
-Task
-
-July 8-12
-
-Build tab UI + titlebar via vaelix-ui
-
-July 12-14
-
-Connect vaelix-shell tab controller with tiamat-core
-
-July 15-18
-
-Add navigation bar, new tab, and history
-
-Phase 4 – Privacy & Law
-
-Date
-
-Task
-
-July 18-22
-
-Load adblock lists and tracker filters
-
-July 22-24
-
-Consent engine UI + ePrivacy opt-outs
-
-July 24-27
-
-Law-compliant dialogs, audit reporting export
-
-Phase 5 – Integration Layer
-
-Date
-
-Task
-
-July 27-30
-
-OAuth setup for Google/Microsoft/Naver
-
-Aug 1-5
-
-Chrome Extension runtime emulation via Rust bridge
-
-Aug 6-8
-
-Chrome Web Store identity + CRX installer integration
-
-Phase 6 – Polish & Test
-
-Date
-
-Task
-
-Aug 9-12
-
-Memory profiling & resource reduction
-
-Aug 12-15
-
-EU & US compliance checklist QA
-
-Aug 15-18
-
-Launch internal beta
-
-V. Deliverables
-
-README.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md
-
-Working Rust workspace with modular separation
-
-Functional browser core with UI
-
-Full-featured adblock and legal compliance
-
-Working Chrome extension loader
-
-OAuth login integration (Google, MS, Naver)
-
-VI. Optional Stretch Goals
-
-Native Rust sync server (Rust-based replacement for Chrome sync)
-
-Web3 wallet integration (privacy-wrapped)
-
-Internal AI assistant (opt-in, private LLM)
-
-WebRTC signaling for P2P tab/extension sync
-
-Mesh network sync support for Tailscale/Zerotier
-
-VII. Notes
-
-All telemetry must be opt-in.
-
-No proprietary blobs unless sandboxed & isolated.
-
-Chromium compatibility must not introduce resource duplication.
-
-Security-first design: Always validate, never trust input.
-
-VIII. License & Legal
-
-Project is MIT licensed with clear contribution terms
-
-Public release under EU-first jurisdiction (via German server host preferred)
-
-No US-based dependencies without open alternatives
+# Vaelix Browser: 2025+ Development Plan (Restart)
+
+## Vision
+Build a fully independent, modern, privacy-first, and standards-compliant web browser engine and UI, rivaling Chromium- and Firefox-based browsers in performance, compatibility, and user experience. Vaelix will be open source, modular, and focused on EU-first compliance, privacy, and extensibility.
+
+## Guiding Principles
+- **Independence:** No reliance on Chromium, Firefox, or WebKit code.
+- **Privacy & Security:** Native blocking of ads, trackers, and fingerprinting. All telemetry opt-in. Security-first design.
+- **Compliance:** EU-first (GDPR, ePrivacy, DSA), with global compliance as a goal.
+- **Performance:** Competitive with leading browsers, efficient resource usage.
+- **Extensibility:** Modern extension system, Chrome extension compatibility, and plugin APIs.
+- **Accessibility & UX:** Modern, customizable UI, accessibility features, and theming.
+
+## Technology Stack
+- **Engine Core:** Rust (HTML, CSS, DOM, layout, rendering, networking, sandboxing)
+- **JavaScript Engine:** Integrate V8 or Deno via Rust FFI (future: own JS engine)
+- **UI Shell:**
+  - Option 1: Rust-native (egui, slint, dioxus, or custom wgpu/skia)
+  - Option 2: C++/Qt or web-based shell (for rapid prototyping)
+- **GPU Acceleration:** wgpu (Rust), Vulkan, or Skia
+- **Platform Support:** Linux (Wayland/X11), Windows, macOS (future: mobile)
+
+## Architecture Overview
+- **Engine Core (tiamat-core):**
+  - HTML5 parser/tokenizer
+  - CSS parser, cascade, and layout engine (Flexbox, Grid, Block)
+  - DOM tree, mutation observer, shadow DOM
+  - Renderer (GPU-accelerated, software fallback)
+  - Networking: HTTP/1.1, HTTP/2, HTTP/3, WebSocket
+  - JS engine integration (V8/Deno)
+  - Sandboxing, process isolation (per-tab, per-extension)
+  - Storage: cookies, cache, local/session storage, IndexedDB
+- **UI Shell (vaelix-ui):**
+  - Tab/session manager, navigation, history
+  - Customizable window management, themes, accessibility
+  - Download manager, crash recovery, IPC
+  - Keyboard shortcuts, gestures, sidebar, vertical tabs
+- **Privacy & Law (vaelix-privacy, vaelix-law):**
+  - Native ad/tracker/fingerprint blocking (EasyList, Fanboy, etc.)
+  - Consent manager, permission system, audit logging
+  - DNT, GPC, auto cookie rejection, shield/kiosk mode
+  - Compliance reporting (GDPR, ePrivacy, DSA, CCPA, etc.)
+- **Extension System (vaelix-ext):**
+  - Chrome extension API compatibility (CRX loader, runtime emulation)
+  - Native plugin API (Rust, WASM, or scripting)
+  - Extension store integration (future)
+- **Integration Layer:**
+  - OAuth2 (Google, Microsoft, Naver, etc.)
+  - Cloud sync (bookmarks, history, tabs)
+  - Web3 wallet (optional), AI assistant (optional)
+
+## Development Phases & Milestones
+
+### Phase 0: Research & Prototyping
+- Evaluate lessons from previous Rust/Elixir attempts
+- Select UI toolkit and JS engine integration approach
+- Define module boundaries and API contracts
+
+### Phase 1: Engine Core Foundation
+- Set up Rust workspace, CI, and code standards
+- Implement minimal HTML5 parser/tokenizer
+- Build basic DOM tree and CSS parser
+- Stub out renderer, networking, and JS engine integration
+- Unit tests for all core modules
+
+### Phase 2: Layout, Rendering, and Networking
+- Implement CSS cascade, box model, and layout engine (Flexbox, Block)
+- Integrate GPU-accelerated renderer (wgpu/skia)
+- Implement HTTP/1.1, HTTP/2, WebSocket client
+- Add sandboxing and process isolation for tabs
+- JS engine integration (V8/Deno via FFI)
+
+### Phase 3: UI Shell & User Experience
+- Build tab/session manager, navigation, and history
+- Implement custom window management, themes, and accessibility
+- Add download manager, crash recovery, and IPC
+- Keyboard shortcuts, gestures, sidebar, and vertical tabs
+
+### Phase 4: Privacy, Law, and Compliance
+- Integrate ad/tracker/fingerprint blocking (blocklists, heuristics)
+- Build consent manager, permission system, and audit logging
+- Implement DNT, GPC, auto cookie rejection, and shield mode
+- Compliance reporting and export (GDPR, ePrivacy, DSA, CCPA, etc.)
+
+### Phase 5: Extensions & Integrations
+- Chrome extension API compatibility (CRX loader, runtime emulation)
+- Native plugin API (Rust, WASM, scripting)
+- OAuth2 integration (Google, Microsoft, Naver)
+- Cloud sync (bookmarks, history, tabs)
+- Optional: Web3 wallet, AI assistant, mesh sync
+
+### Phase 6: Testing, QA, and Release
+- Automated and manual testing (unit, integration, fuzzing)
+- Performance profiling and optimization
+- Accessibility and usability audits
+- Security review and hardening
+- Internal and public beta releases
+- Documentation, contribution guidelines, and code of conduct
+
+## Compliance & Privacy
+- All telemetry opt-in, no proprietary blobs unless sandboxed
+- EU-first legal compliance, with global expansion
+- Security-first: validate all input, sandbox untrusted code
+- Public release under EU jurisdiction, MIT or EU-friendly license
+
+## Community & Contribution
+- Open governance, clear contribution terms
+- Code of conduct, inclusive and welcoming community
+- Transparent roadmap and issue tracking
+
+## Stretch Goals
+- Native Rust sync server (alternative to Chrome sync)
+- Web3 wallet integration (privacy-wrapped)
+- Internal AI assistant (opt-in, private LLM)
+- WebRTC/mesh sync for tabs/extensions
+- Mobile platform support (Android/iOS)
+
+## Lessons Learned & Rationale
+- Rust is the best fit for a new, safe, high-performance browser engine
+- Elixir/BEAM is excellent for orchestration, but not for engine/UI
+- UI toolkit choice is critical: prioritize accessibility, performance, and cross-platform support
+- JS engine integration is a major challenge: start with FFI, consider own engine in future
+- Modular, test-driven development is essential for maintainability
+
+---
 
 Let the code forge begin. 🔥🐉
 
