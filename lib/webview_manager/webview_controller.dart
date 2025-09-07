@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart'; // For generating unique IDs
 import 'package:vaelix/webview_manager/models/tab_model.dart';
@@ -11,10 +12,7 @@ class TabState {
   TabState({required this.tabs, this.activeTabId});
 
   // Helper to create a new state with modified properties.
-  TabState copyWith({
-    List<TabModel>? tabs,
-    String? activeTabId,
-  }) {
+  TabState copyWith({List<TabModel>? tabs, String? activeTabId}) {
     return TabState(
       tabs: tabs ?? this.tabs,
       activeTabId: activeTabId ?? this.activeTabId,
@@ -55,10 +53,7 @@ class WebViewController extends Notifier<TabState> {
       newActiveTabId = updatedTabs.first.id;
     }
 
-    state = state.copyWith(
-      tabs: updatedTabs,
-      activeTabId: newActiveTabId,
-    );
+    state = state.copyWith(tabs: updatedTabs, activeTabId: newActiveTabId);
   }
 
   // Sets the active tab by its ID.
@@ -69,7 +64,12 @@ class WebViewController extends Notifier<TabState> {
   }
 
   // Updates the properties of a specific tab.
-  void updateTab(String tabId, {String? url, String? title, ImageProvider? favicon}) {
+  void updateTab(
+    String tabId, {
+    String? url,
+    String? title,
+    ImageProvider? favicon,
+  }) {
     final updatedTabs = state.tabs.map((tab) {
       if (tab.id == tabId) {
         return tab.copyWith(url: url, title: title, favicon: favicon);
@@ -82,12 +82,18 @@ class WebViewController extends Notifier<TabState> {
   // Get the active tab's controller. This will be used by WebViewContainer to control the webview.
   InAppWebViewController? getActiveTabController() {
     return state.tabs
-        .firstWhere((tab) => tab.id == state.activeTabId, orElse: () => throw Exception('No active tab'))
+        .firstWhere(
+          (tab) => tab.id == state.activeTabId,
+          orElse: () => throw Exception('No active tab'),
+        )
         .webViewController;
   }
 
   // Set the controller for a tab
-  void setTabWebViewController(String tabId, InAppWebViewController controller) {
+  void setTabWebViewController(
+    String tabId,
+    InAppWebViewController controller,
+  ) {
     final updatedTabs = state.tabs.map((tab) {
       if (tab.id == tabId) {
         return tab.copyWith(webViewController: controller);
@@ -99,4 +105,6 @@ class WebViewController extends Notifier<TabState> {
 }
 
 // The provider for our WebViewController.
-final webviewControllerProvider = NotifierProvider<WebViewController, TabState>(WebViewController.new);
+final webviewControllerProvider = NotifierProvider<WebViewController, TabState>(
+  WebViewController.new,
+);

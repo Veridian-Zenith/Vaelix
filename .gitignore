@@ -10,3 +10,18 @@ Cargo.lock
 *.swp
 node_modules/
 
+# Gradle build cache
+.gradle-build-cache/
+
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub/
+.build/
+
+# Android
+**/build/
+*.iml
+.idea/
+/local.properties
+

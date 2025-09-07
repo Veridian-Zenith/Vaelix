@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:vaelix/webview_manager/webview_controller.dart';
 
 class NavigationControlsWidget extends ConsumerWidget {
@@ -7,46 +8,98 @@ class NavigationControlsWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the webview controller provider so we rebuild when the active tab or its controller changes.
+    ref.watch(webviewControllerProvider);
     final webviewNotifier = ref.read(webviewControllerProvider.notifier);
     final activeWebViewController = webviewNotifier.getActiveTabController();
 
-    // We'll also watch the active tab's URL/title to enable/disable buttons if needed.
-    // For now, we'll keep it simple and just use the controller.
-
-    return BottomAppBar(
-      color: Theme.of(context).appBarTheme.backgroundColor, // Use app bar color
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      color: Theme.of(context).appBarTheme.backgroundColor ?? cs.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              if (activeWebViewController != null && await activeWebViewController.canGoBack()) {
-                activeWebViewController.goBack();
-              }
+          // Back button: disabled when there's no controller or can't go back.
+          FutureBuilder<bool>(
+            future: activeWebViewController?.canGoBack(),
+            builder: (context, snapshot) {
+              final canGoBack = snapshot.data == true;
+              return IconButton(
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(
+                  width: 36,
+                  height: 36,
+                ),
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: canGoBack ? cs.primary : cs.onSurface.withOpacity(0.5),
+                ),
+                onPressed: (activeWebViewController != null && canGoBack)
+                    ? () => activeWebViewController.goBack()
+                    : null,
+              );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.arrow_forward),
-            onPressed: () async {
-              if (activeWebViewController != null && await activeWebViewController.canGoForward()) {
-                activeWebViewController.goForward();
-              }
+
+          // Forward button: disabled when there's no controller or can't go forward.
+          FutureBuilder<bool>(
+            future: activeWebViewController?.canGoForward(),
+            builder: (context, snapshot) {
+              final canGoForward = snapshot.data == true;
+              return IconButton(
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(
+                  width: 36,
+                  height: 36,
+                ),
+                icon: Icon(
+                  Icons.arrow_forward,
+                  color: canGoForward
+                      ? cs.primary
+                      : cs.onSurface.withOpacity(0.5),
+                ),
+                onPressed: (activeWebViewController != null && canGoForward)
+                    ? () => activeWebViewController.goForward()
+                    : null,
+              );
             },
           ),
+
+          // Refresh
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              activeWebViewController?.reload();
-            },
+            iconSize: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+            icon: Icon(
+              Icons.refresh,
+              color: activeWebViewController != null
+                  ? cs.secondary
+                  : cs.onSurface.withOpacity(0.5),
+            ),
+            onPressed: activeWebViewController != null
+                ? () => activeWebViewController.reload()
+                : null,
           ),
+
+          // Home: navigate to about:blank or configured homepage
           IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () {
-              // For now, reload the current tab to its initial blank/new tab state
-              // Later, this could navigate to a configurable homepage.
-              activeWebViewController?.loadUrl(urlRequest: URLRequest(url: WebUri("about:blank")));
-            },
+            iconSize: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+            icon: Icon(
+              Icons.home,
+              color: activeWebViewController != null
+                  ? cs.secondary
+                  : cs.onSurface.withOpacity(0.5),
+            ),
+            onPressed: activeWebViewController != null
+                ? () => activeWebViewController.loadUrl(
+                    urlRequest: URLRequest(url: WebUri("about:blank")),
+                  )
+                : null,
           ),
           // TODO: Potentially add a tab switcher button here if needed in the future
         ],

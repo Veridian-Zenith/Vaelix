@@ -1,128 +1,192 @@
-# Vaelix Browser: 2025+ Development Plan (Restart)
-
-## Vision
-Build a fully independent, modern, privacy-first, and standards-compliant web browser engine and UI, rivaling Chromium- and Firefox-based browsers in performance, compatibility, and user experience. Vaelix will be open source, modular, and focused on EU-first compliance, privacy, and extensibility.
-
-## Guiding Principles
-- **Independence:** No reliance on Chromium, Firefox, or WebKit code.
-- **Privacy & Security:** Native blocking of ads, trackers, and fingerprinting. All telemetry opt-in. Security-first design.
-- **Compliance:** EU-first (GDPR, ePrivacy, DSA), with global compliance as a goal.
-- **Performance:** Competitive with leading browsers, efficient resource usage.
-- **Extensibility:** Modern extension system, Chrome extension compatibility, and plugin APIs.
-- **Accessibility & UX:** Modern, customizable UI, accessibility features, and theming.
-
-## Technology Stack
-- **Engine Core:** Rust (HTML, CSS, DOM, layout, rendering, networking, sandboxing)
-- **JavaScript Engine:** Integrate V8 or Deno via Rust FFI (future: own JS engine)
-- **UI Shell:**
-  - Option 1: Rust-native (egui, slint, dioxus, or custom wgpu/skia)
-  - Option 2: C++/Qt or web-based shell (for rapid prototyping)
-- **GPU Acceleration:** wgpu (Rust), Vulkan, or Skia
-- **Platform Support:** Linux (Wayland/X11), Windows, macOS (future: mobile)
-
-## Architecture Overview
-- **Engine Core (tiamat-core):**
-  - HTML5 parser/tokenizer
-  - CSS parser, cascade, and layout engine (Flexbox, Grid, Block)
-  - DOM tree, mutation observer, shadow DOM
-  - Renderer (GPU-accelerated, software fallback)
-  - Networking: HTTP/1.1, HTTP/2, HTTP/3, WebSocket
-  - JS engine integration (V8/Deno)
-  - Sandboxing, process isolation (per-tab, per-extension)
-  - Storage: cookies, cache, local/session storage, IndexedDB
-- **UI Shell (vaelix-ui):**
-  - Tab/session manager, navigation, history
-  - Customizable window management, themes, accessibility
-  - Download manager, crash recovery, IPC
-  - Keyboard shortcuts, gestures, sidebar, vertical tabs
-- **Privacy & Law (vaelix-privacy, vaelix-law):**
-  - Native ad/tracker/fingerprint blocking (EasyList, Fanboy, etc.)
-  - Consent manager, permission system, audit logging
-  - DNT, GPC, auto cookie rejection, shield/kiosk mode
-  - Compliance reporting (GDPR, ePrivacy, DSA, CCPA, etc.)
-- **Extension System (vaelix-ext):**
-  - Chrome extension API compatibility (CRX loader, runtime emulation)
-  - Native plugin API (Rust, WASM, or scripting)
-  - Extension store integration (future)
-- **Integration Layer:**
-  - OAuth2 (Google, Microsoft, Naver, etc.)
-  - Cloud sync (bookmarks, history, tabs)
-  - Web3 wallet (optional), AI assistant (optional)
-
-## Development Phases & Milestones
-
-### Phase 0: Research & Prototyping
-- Evaluate lessons from previous Rust/Elixir attempts
-- Select UI toolkit and JS engine integration approach
-- Define module boundaries and API contracts
-
-### Phase 1: Engine Core Foundation
-- Set up Rust workspace, CI, and code standards
-- Implement minimal HTML5 parser/tokenizer
-- Build basic DOM tree and CSS parser
-- Stub out renderer, networking, and JS engine integration
-- Unit tests for all core modules
-
-### Phase 2: Layout, Rendering, and Networking
-- Implement CSS cascade, box model, and layout engine (Flexbox, Block)
-- Integrate GPU-accelerated renderer (wgpu/skia)
-- Implement HTTP/1.1, HTTP/2, WebSocket client
-- Add sandboxing and process isolation for tabs
-- JS engine integration (V8/Deno via FFI)
-
-### Phase 3: UI Shell & User Experience
-- Build tab/session manager, navigation, and history
-- Implement custom window management, themes, and accessibility
-- Add download manager, crash recovery, and IPC
-- Keyboard shortcuts, gestures, sidebar, and vertical tabs
-
-### Phase 4: Privacy, Law, and Compliance
-- Integrate ad/tracker/fingerprint blocking (blocklists, heuristics)
-- Build consent manager, permission system, and audit logging
-- Implement DNT, GPC, auto cookie rejection, and shield mode
-- Compliance reporting and export (GDPR, ePrivacy, DSA, CCPA, etc.)
-
-### Phase 5: Extensions & Integrations
-- Chrome extension API compatibility (CRX loader, runtime emulation)
-- Native plugin API (Rust, WASM, scripting)
-- OAuth2 integration (Google, Microsoft, Naver)
-- Cloud sync (bookmarks, history, tabs)
-- Optional: Web3 wallet, AI assistant, mesh sync
-
-### Phase 6: Testing, QA, and Release
-- Automated and manual testing (unit, integration, fuzzing)
-- Performance profiling and optimization
-- Accessibility and usability audits
-- Security review and hardening
-- Internal and public beta releases
-- Documentation, contribution guidelines, and code of conduct
-
-## Compliance & Privacy
-- All telemetry opt-in, no proprietary blobs unless sandboxed
-- EU-first legal compliance, with global expansion
-- Security-first: validate all input, sandbox untrusted code
-- Public release under EU jurisdiction, MIT or EU-friendly license
-
-## Community & Contribution
-- Open governance, clear contribution terms
-- Code of conduct, inclusive and welcoming community
-- Transparent roadmap and issue tracking
-
-## Stretch Goals
-- Native Rust sync server (alternative to Chrome sync)
-- Web3 wallet integration (privacy-wrapped)
-- Internal AI assistant (opt-in, private LLM)
-- WebRTC/mesh sync for tabs/extensions
-- Mobile platform support (Android/iOS)
-
-## Lessons Learned & Rationale
-- Rust is the best fit for a new, safe, high-performance browser engine
-- Elixir/BEAM is excellent for orchestration, but not for engine/UI
-- UI toolkit choice is critical: prioritize accessibility, performance, and cross-platform support
-- JS engine integration is a major challenge: start with FFI, consider own engine in future
-- Modular, test-driven development is essential for maintainability
+# Vaelix Browser: Modular Development & Design Plan
 
 ---
 
-Let the code forge begin. 🔥🐉
+## 1. Core Vision & Philosophy
 
+**Vision**
+Vaelix is a personalized, privacy-first browser that feels alive. Inspired by **Naver Whale** (responsiveness), **Vivaldi** (fluidity and uniqueness), and **OperaGX** (deep customization), Vaelix focuses on **how humans interact with the web**, not just rendering pages.
+
+**Mantra**
+> “Modular progress over monolithic perfection.”
+Every module is a victory. Every milestone is a usable product.
+
+**Differentiation**
+- Not another Chromium wrapper — Vaelix is a **user environment**.
+- **Privacy-centric** → opt-in data collection only.
+- **Design-driven** → aesthetics matter as much as performance.
+- **Transparent** → users see exactly what is collected, why, and how.
+
+---
+
+## 2. Design & Theming Philosophy
+
+### Inspirations
+- **Naver Whale** → Extreme responsiveness, adaptive layouts, split-view.
+- **Vivaldi** → Smooth animations, customizable layouts, future tab stacking.
+- **OperaGX** → Deep customization, color sliders, “control panel” style shields.
+
+### Theme Goals
+**Dark Mode (Primary)**
+- **Absolute Black** (#000000): backgrounds, modals.
+- **Rosewater** (#ffa6ad): main accents, buttons, highlights.
+- **Gold (yellow-leaning, ~#FFD54A)**: secondary accents, text highlights.
+
+**Light Mode (Blue Diamond-inspired)**
+- Soft ice blue/white gradients: backgrounds.
+- Deep sapphire + sky tones: accents.
+- Subtle shimmer/glass effects: buttons & tab bars.
+
+### System & UX
+- **Typography**: Modern rounded sans (Inter, Manrope, Noto Sans KR for intl).
+- **Spacing & Shape**: Rounded corners (8–12px), touch-friendly padding.
+- **Animations**: Ripples, glowing button presses, bouncy shield popup.
+- **Customization**: OperaGX-style theme profiles, saved presets.
+- **Dynamic Elements**:
+  - Optional animated wallpapers (low-opacity particles/gradients).
+  - Session-based accent colors (Work vs Entertainment tabs).
+
+---
+
+## 3. Technology & Tooling Stack
+
+- **UI Framework**: Flutter (pinned via FVM).
+- **Language**: Dart (strict linting, null safety).
+- **State Management**: Riverpod + StateNotifier.
+- **Web Rendering**: `flutter_inappwebview` (advanced interception, cookies, JS injection).
+
+**Persistence**
+- `sqflite` for history, bookmarks, downloads.
+- `shared_preferences` for settings and themes.
+- Abstracted to allow easy migration to Isar/Drift later.
+
+**Backend (Optional)**
+- **Elixir + Phoenix** for sync/export (real-time, fault-tolerant, scalable).
+- Use cases: bookmark/history sync, encrypted backups.
+- Strictly opt-in → Vaelix works fully offline by default.
+
+**DevOps**
+- **Version Control**: Git, feature-branch workflow, semantic commits.
+- **CI/CD**: GitHub Actions (lint, tests, builds).
+- **Tracking**: GitHub Projects or Notion Kanban.
+
+---
+
+## 4. Privacy & Compliance
+
+### Principles
+- **All non-essential data collection = OPT-IN.**
+- **Default: no telemetry.**
+- Features requiring data must disclose:
+  - What data is collected.
+  - Why it’s needed.
+  - How it’s stored/used.
+  - How to disable it.
+
+### Compliance Targets
+- **GDPR (EU)** → Consent, access/delete rights.
+- **PIPA (Korea)** → Clear purpose, minimal collection.
+- **CCPA (California)** → Right to opt-out, full disclosure.
+- **COPPA (US)** → 18+ check or parental controls.
+
+### Privacy Engine
+- Built-in ad/tracker blocker.
+- Domain whitelisting.
+- Bandwidth saver (block images/media).
+- **Privacy Profiles**: Basic → Balanced → Strict.
+
+---
+
+## 5. Modular Architecture
+
+**Module 1: core**
+- Theme definitions (dark/light, accents).
+- Dependency injection (Riverpod).
+- Router (go_router).
+- Error handling & logging.
+- Constants & utils (URL validation, formatting).
+
+**Module 2: data_layer**
+- `sqflite` setup + migrations.
+- Repositories: History, Bookmarks, Settings, Downloads.
+- Models: HistoryItem, Bookmark, DownloadItem.
+
+**Module 3: webview_manager**
+- Abstract WebView control.
+- Tab management (create/switch/close).
+- Per-tab settings (shields toggle).
+- Request interception (ties to Privacy Engine).
+- Download handler.
+
+**Module 4: privacy_engine**
+- Pure Dart (no Flutter deps).
+- Filter parsing (EasyList, uBlock-style).
+- Efficient matching (Trie / Aho-Corasick).
+- Privacy Profiles.
+- 100% tested matching logic.
+
+**Module 5: ui_shell**
+- Screens: Browser, History, Bookmarks, Settings, Downloads.
+- Widgets:
+  - AddressBar (omnibox, autocomplete).
+  - TabBar (fluid, animated).
+  - NavigationControls (back, forward, refresh, home).
+  - ShieldsPopup (blocked trackers, whitelist toggle).
+  - Settings UI (search engine, theme, shields toggles).
+- Customization Engine: Theme profiles, user color sliders.
+
+---
+
+## 6. Phased Development Roadmap
+
+**Phase 1: Fully Functional Base (3–4 weeks)**
+Deliverable: A polished, usable single-tab browser with full UI skeleton.
+- Dark theme + Rosewater/Gold accents.
+- WebView + omnibox + progress bar.
+- Basic tab system (add/close/switch).
+- History + bookmarks persistence.
+- Settings screen (opt-in toggles).
+
+**Phase 2: Multi-Tab Browser (2–3 weeks)**
+- Advanced tab lifecycle (thumbnails, recently closed).
+- Download manager.
+- Searchable history.
+- Bookmark folders.
+
+**Phase 3: Privacy Engine (3–4 weeks)**
+- Ad/tracker blocking.
+- Shields popup + live counter.
+- Domain whitelist.
+- Privacy Profiles.
+
+**Phase 4: Customization & Extras (3–5 weeks)**
+- Blue Diamond light theme.
+- Theme profiles + OperaGX sliders.
+- Session accents (work vs entertainment).
+- UI polish (animations, responsiveness).
+
+**Phase 5: Beta Release**
+- Testing + bug fixes.
+- CI/CD automation.
+- Publish to Google Play (open beta).
+- Collect opt-in feedback.
+
+---
+
+## 7. Future Expansion
+- **Sync (opt-in)**: Elixir backend for encrypted bookmarks/history.
+- **Extensions API**: Custom Dart/JS hybrid system.
+- **Cross-platform**: Desktop build (Flutter + inappwebview).
+- **Privacy Reports**: Monthly stats on trackers/ads blocked.
+- **Gesture Navigation**: Swipe/long-press actions.
+
+---
+
+## 8. Guiding Principles
+- **User control first** → opt-in only, nothing hidden.
+- **Transparency** → clear disclosures in plain language.
+- **Customization** → themes, layouts, workflows are yours.
+- **Performance** → lightweight, responsive, optimized.
+- **Innovation** → borrowing the best ideas, but pushing further.
+- **Collaboration** → open to feedback, contributions, and partnerships.
+- **Community minded and inclusive** → built for users, by users.

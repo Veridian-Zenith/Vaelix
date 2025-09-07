@@ -10,9 +10,12 @@ class TabBarWidget extends ConsumerWidget {
     final tabState = ref.watch(webviewControllerProvider);
     final webviewNotifier = ref.read(webviewControllerProvider.notifier);
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       height: 48, // Standard height for a tab bar
-      color: Theme.of(context).appBarTheme.backgroundColor, // Use app bar color for consistency
+      color:
+          Theme.of(context).appBarTheme.backgroundColor ??
+          cs.surface, // Use app bar color for consistency
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: tabState.tabs.length + 1, // +1 for the add new tab button
@@ -26,16 +29,30 @@ class TabBarWidget extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                 decoration: BoxDecoration(
-                  color: isActive ? Theme.of(context).colorScheme.primary.withOpacity(0.2) : Theme.of(context).colorScheme.surface,
+                  color: isActive ? cs.primary.withOpacity(0.16) : cs.surface,
                   borderRadius: BorderRadius.circular(8),
-                  border: isActive ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2) : null,
+                  border: isActive
+                      ? Border.all(color: cs.primary, width: 2)
+                      : null,
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: cs.secondary.withOpacity(0.08),
+                            blurRadius: 6,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
                     tab.title,
                     style: TextStyle(
-                      color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.bodyLarge?.color,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      color: isActive
+                          ? cs.primary
+                          : Theme.of(context).textTheme.bodyLarge?.color,
+                      fontWeight: isActive
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -50,13 +67,10 @@ class TabBarWidget extends ConsumerWidget {
                 width: 40,
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  Icons.add,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                child: Icon(Icons.add, color: cs.primary),
               ),
             );
           }

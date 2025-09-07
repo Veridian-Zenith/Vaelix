@@ -1,13 +1,16 @@
-# Vaelix
+# vaelix
 
-**Vaelix** is a fully independent, privacy-first browser engine and UI, built in Rust.
+Flutter based web browser for android
 
-## Modules
+## Getting Started
 
-- \`tiamat-core\`: HTML/CSS/DOM/rendering/networking/JS engine
-- \`vaelix-shell\`: Tab/session/navigation controller, process isolation
-- \`vaelix-ui\`: UI shell, window management, themes, accessibility
-- \`vaelix-law\`: Legal compliance (GDPR/ePrivacy/DSA/CCPA)
-- \`vaelix-privacy\`: Ad/tracker/fingerprint blocking, shield mode
-- \`vaelix-ext\`: Extension system (Chrome API, native plugins)
+This project is a starting point for a Flutter application.
 
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
