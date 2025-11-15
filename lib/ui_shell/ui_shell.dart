@@ -1,1 +1,0 @@
-// UI Shell module placeholder
