@@ -44,7 +44,8 @@ signals:
     void titleChanged(const QString &title);
 
 public slots:
-    void newTab(const QUrl &url = QUrl("https://www.startpage.com"));
+    void newTab(const QUrl &url);
+    void newTab();
     void closeCurrentTab();
     void navigateToUrl();
     void navigateToUrl(const QUrl &url);

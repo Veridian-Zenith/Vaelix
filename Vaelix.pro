@@ -1,7 +1,12 @@
-QT += core gui widgets webenginewidgets
+QT += core gui widgets webenginewidgets webenginecore webchannel network qml quick positioning printsupport
+
 TARGET = Vaelix
 TEMPLATE = app
+
 CONFIG += c++20
+CONFIG += qt6_support
+CONFIG += use_libprefix
+QT_CONFIG -= no-pkg-config
 
 # Nordic architecture naming
 SOURCES += \
@@ -20,9 +25,8 @@ HEADERS += \
 # Nordic warm color scheme
 DEFINES += NORDIC_WARM_COLORS
 
-# Linux-specific
 unix {
     CONFIG += console
-    QMAKE_CXXFLAGS += -std=c++20 -O3 -pipe -march=native
-    QMAKE_LFLAGS += -flto=thin -fuse-ld=lld
+    QMAKE_CXXFLAGS += -std=c++20 -O3 -pipe -march=native -pthread
+    QMAKE_LFLAGS += -pthread
 }

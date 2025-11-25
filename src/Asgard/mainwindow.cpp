@@ -323,7 +323,8 @@ QSplitter* MainWindow::createMainSplitter()
 
 void MainWindow::setupStatusBar()
 {
-    statusBar = this->statusBar();
+    statusBar = new QStatusBar();
+    setStatusBar(statusBar);
     statusBar->setStyleSheet(R"(
         QStatusBar {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -375,50 +376,61 @@ void MainWindow::setupToolbars()
 
 void MainWindow::setupShortcuts()
 {
-    // File menu shortcuts
-    new QShortcut(QKeySequence::New, this, &MainWindow::newTab);
-    new QShortcut(QKeySequence::Open, this, &MainWindow::newWindow);
-    new QShortcut(QKeySequence::Close, this, &MainWindow::closeCurrentTab);
+    // File menu shortcuts - use lambda functions to avoid function pointer issues
+    QShortcut* newTabShortcut = new QShortcut(QKeySequence::New, this);
+    connect(newTabShortcut, &QShortcut::activated, this, [this]() { newTab(); });
+    QShortcut* openShortcut = new QShortcut(QKeySequence::Open, this);
+    connect(openShortcut, &QShortcut::activated, this, &MainWindow::newWindow);
+    QShortcut* closeShortcut = new QShortcut(QKeySequence::Close, this);
+    connect(closeShortcut, &QShortcut::activated, this, &MainWindow::closeCurrentTab);
 
     // Navigation shortcuts
-    new QShortcut(QKeySequence::Refresh, this, &MainWindow::reload);
-    new QShortcut(QKeySequence::Back, this, &MainWindow::goBack);
-    new QShortcut(QKeySequence::Forward, this, &MainWindow::goForward);
-    new QShortcut(QKeySequence("Home"), this);
-    connect(new QShortcut(QKeySequence("Home"), this), &QShortcut::activated, this, [this]() { home(); });
+    QShortcut* refreshShortcut = new QShortcut(QKeySequence::Refresh, this);
+    connect(refreshShortcut, &QShortcut::activated, this, &MainWindow::reload);
+    QShortcut* backShortcut = new QShortcut(QKeySequence::Back, this);
+    connect(backShortcut, &QShortcut::activated, this, &MainWindow::goBack);
+    QShortcut* forwardShortcut = new QShortcut(QKeySequence::Forward, this);
+    connect(forwardShortcut, &QShortcut::activated, this, &MainWindow::goForward);
+    QShortcut* homeShortcut = new QShortcut(QKeySequence("Home"), this);
+    connect(homeShortcut, &QShortcut::activated, this, [this]() { home(); });
 
     // View shortcuts
-    new QShortcut(QKeySequence("Ctrl+Shift+F"), this, &MainWindow::toggleFullscreen);
-    new QShortcut(QKeySequence("Ctrl+F"), this, &MainWindow::findOnPage);
-    new QShortcut(QKeySequence("F12"), this, &MainWindow::showDeveloperTools);
+    QShortcut* fullscreenShortcut = new QShortcut(QKeySequence("Ctrl+Shift+F"), this);
+    connect(fullscreenShortcut, &QShortcut::activated, this, &MainWindow::toggleFullscreen);
+    QShortcut* findShortcut = new QShortcut(QKeySequence("Ctrl+F"), this);
+    connect(findShortcut, &QShortcut::activated, this, &MainWindow::findOnPage);
+    QShortcut* f12Shortcut = new QShortcut(QKeySequence("F12"), this);
+    connect(f12Shortcut, &QShortcut::activated, this, &MainWindow::showDeveloperTools);
 
     // Browser shortcuts - using safer connect syntax
-    new QShortcut(QKeySequence("Ctrl+T"), this);
-    connect(new QShortcut(QKeySequence("Ctrl+T"), this), &QShortcut::activated, this, [this]() { newTab(); });
-    QShortcut* ctrlLShortcut = new QShortcut(QKeySequence("Ctrl+L"), addressBar);
-    connect(ctrlLShortcut, &QShortcut::activated, addressBar, &QLineEdit::setFocus);
-    new QShortcut(QKeySequence("Ctrl+D"), this);
-    connect(new QShortcut(QKeySequence("Ctrl+D"), this), &QShortcut::activated, this, [this] { /* Add bookmark */ });
-    new QShortcut(QKeySequence("Ctrl+Shift+O"), this);
-    connect(new QShortcut(QKeySequence("Ctrl+Shift+O"), this), &QShortcut::activated, this, [this]() { showBookmarks(); });
-    new QShortcut(QKeySequence("Ctrl+H"), this);
-    connect(new QShortcut(QKeySequence("Ctrl+H"), this), &QShortcut::activated, this, [this]() { showHistory(); });
-    new QShortcut(QKeySequence("Ctrl+J"), this);
-    connect(new QShortcut(QKeySequence("Ctrl+J"), this), &QShortcut::activated, this, [this]() { showDownloads(); });
-    new QShortcut(QKeySequence("Ctrl+Shift+E"), this);
-    connect(new QShortcut(QKeySequence("Ctrl+Shift+E"), this), &QShortcut::activated, this, [this]() { manageExtensions(); });
+    QShortcut* ctrlTShortcut = new QShortcut(QKeySequence("Ctrl+T"), this);
+    connect(ctrlTShortcut, &QShortcut::activated, this, [this]() { newTab(); });
+    QShortcut* ctrlLShortcut = new QShortcut(QKeySequence("Ctrl+L"), this);
+    connect(ctrlLShortcut, &QShortcut::activated, [this] { addressBar->setFocus(); });
+    QShortcut* ctrlDShortcut = new QShortcut(QKeySequence("Ctrl+D"), this);
+    connect(ctrlDShortcut, &QShortcut::activated, this, [this] { /* Add bookmark */ });
+    QShortcut* ctrlShiftOShortcut = new QShortcut(QKeySequence("Ctrl+Shift+O"), this);
+    connect(ctrlShiftOShortcut, &QShortcut::activated, this, [this]() { showBookmarks(); });
+    QShortcut* ctrlHShortcut = new QShortcut(QKeySequence("Ctrl+H"), this);
+    connect(ctrlHShortcut, &QShortcut::activated, this, [this]() { showHistory(); });
+    QShortcut* ctrlJShortcut = new QShortcut(QKeySequence("Ctrl+J"), this);
+    connect(ctrlJShortcut, &QShortcut::activated, this, [this]() { showDownloads(); });
+    QShortcut* ctrlEShortcut = new QShortcut(QKeySequence("Ctrl+Shift+E"), this);
+    connect(ctrlEShortcut, &QShortcut::activated, this, [this]() { manageExtensions(); });
 
-    // Settings
-    new QShortcut(QKeySequence("Ctrl+Comma"), this);
+    // Settings and zoom shortcuts
+    QShortcut* ctrlCommaShortcut = new QShortcut(QKeySequence("Ctrl+Comma"), this);
+    connect(ctrlCommaShortcut, &QShortcut::activated, this, [this]() { showSettings(); });
+    QShortcut* zoomResetShortcut = new QShortcut(QKeySequence("Ctrl+0"), this);
     connect(zoomResetShortcut, &QShortcut::activated, this, &MainWindow::zoomReset);
 
     // Special shortcuts - using connect for safer method call syntax
-    QShortcut* homeShortcut = new QShortcut(QKeySequence("Alt+Home"), this);
-    connect(homeShortcut, &QShortcut::activated, this, &MainWindow::home);
-    QShortcut* backShortcut = new QShortcut(QKeySequence("Alt+Left"), this);
-    connect(backShortcut, &QShortcut::activated, this, &MainWindow::goBack);
-    QShortcut* forwardShortcut = new QShortcut(QKeySequence("Alt+Right"), this);
-    connect(forwardShortcut, &QShortcut::activated, this, &MainWindow::goForward);
+    QShortcut* altHomeShortcut = new QShortcut(QKeySequence("Alt+Home"), this);
+    connect(altHomeShortcut, &QShortcut::activated, this, &MainWindow::home);
+    QShortcut* altLeftShortcut = new QShortcut(QKeySequence("Alt+Left"), this);
+    connect(altLeftShortcut, &QShortcut::activated, this, &MainWindow::goBack);
+    QShortcut* altRightShortcut = new QShortcut(QKeySequence("Alt+Right"), this);
+    connect(altRightShortcut, &QShortcut::activated, this, &MainWindow::goForward);
     QShortcut* escapeShortcut = new QShortcut(QKeySequence("Escape"), this);
     connect(escapeShortcut, &QShortcut::activated, this, &MainWindow::stopLoading);
     QShortcut* f5Shortcut = new QShortcut(QKeySequence("F5"), this);
@@ -486,7 +498,7 @@ void MainWindow::createFileMenu()
 
     QAction *newTabAction = fileMenu->addAction("New Tab");
     newTabAction->setShortcut(QKeySequence::New);
-    connect(newTabAction, &QAction::triggered, this, &MainWindow::newTab);
+    connect(newTabAction, &QAction::triggered, this, [this]() { newTab(); });
 
     QAction *newWindowAction = fileMenu->addAction("New Window");
     newWindowAction->setShortcut(QKeySequence::Open);
@@ -677,6 +689,11 @@ void MainWindow::createHelpMenu()
 
     QAction *checkUpdatesAction = helpMenu->addAction("Check for Updates...");
     connect(checkUpdatesAction, &QAction::triggered, this, &MainWindow::checkForUpdates);
+}
+
+void MainWindow::newTab()
+{
+    newTab(QUrl("https://www.startpage.com"));
 }
 
 void MainWindow::newTab(const QUrl &url)

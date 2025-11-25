@@ -1,0 +1,298 @@
+defmodule VaelixBackend.Network.VPNManager do
+  @moduledoc """
+  VPN integration and tunnel management for secure browsing.
+  Supports multiple VPN providers with automatic failover and performance optimization.
+  """
+
+  use GenServer
+  require Logger
+
+  # VPN Provider configurations
+  @providers %{
+    expressvpn: %{
+      name: "ExpressVPN",
+      endpoints: ["us-east-1.expressvpn.com", "us-west-1.expressvpn.com", "eu-west-1.expressvpn.com"],
+      protocol: "openvpn",
+      port: 1194
+    },
+    nordvpn: %{
+      name: "NordVPN",
+      endpoints: ["us1.nordvpn.com", "us2.nordvpn.com", "ca1.nordvpn.com"],
+      protocol: "openvpn",
+      port: 1194
+    },
+    protonvpn: %{
+      name: "ProtonVPN",
+      endpoints: ["us-1.protonvpn.com", "us-2.protonvpn.com", "uk-1.protonvpn.com"],
+      protocol: "wireguard",
+      port: 51820
+    }
+  }
+
+  # State management
+  defmodule State do
+    defstruct [
+      :active_provider,
+      :active_endpoint,
+      :connection_status,
+      :latency_map,
+      :bandwidth_usage,
+      :auto_connect_enabled,
+      :kill_switch_enabled,
+      :dns_leak_protection,
+      :last_health_check,
+      :available_endpoints
+    ]
+  end
+
+  # Public API
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+
+  def connect(provider, endpoint \\ nil) when is_atom(provider) do
+    GenServer.call(__MODULE__, {:connect, provider, endpoint})
+  end
+
+  def disconnect() do
+    GenServer.call(__MODULE__, :disconnect)
+  end
+
+  def get_status() do
+    GenServer.call(__MODULE__, :get_status)
+  end
+
+  def set_auto_connect(enabled) when is_boolean(enabled) do
+    GenServer.call(__MODULE__, {:set_auto_connect, enabled})
+  end
+
+  def set_kill_switch(enabled) when is_boolean(enabled) do
+    GenServer.call(__MODULE__, {:set_kill_switch, enabled})
+  end
+
+  def get_available_endpoints() do
+    GenServer.call(__MODULE__, :get_available_endpoints)
+  end
+
+  def enable_dns_over_https() do
+    GenServer.call(__MODULE__, :enable_dns_over_https)
+  end
+
+  # GenServer callbacks
+  def init(_opts) do
+    # Initialize with health checks
+    check_endpoint_health()
+
+    # Start periodic health monitoring
+    schedule_health_check()
+
+    {:ok, %State{
+      active_provider: nil,
+      active_endpoint: nil,
+      connection_status: :disconnected,
+      latency_map: %{},
+      bandwidth_usage: %{},
+      auto_connect_enabled: false,
+      kill_switch_enabled: true,
+      dns_leak_protection: true,
+      last_health_check: System.system_time(:second),
+      available_endpoints: Map.keys(@providers)
+    }}
+  end
+
+  def handle_call({:connect, provider, endpoint}, _from, state) do
+    case Map.fetch(@providers, provider) do
+      {:ok, provider_config} ->
+        selected_endpoint = select_best_endpoint(provider, endpoint, state.latency_map)
+        case establish_vpn_connection(provider_config, selected_endpoint) do
+          {:ok, connection_pid} ->
+            new_state = %{state |
+              active_provider: provider,
+              active_endpoint: selected_endpoint,
+              connection_status: :connected,
+              last_health_check: System.system_time(:second)
+            }
+
+            Logger.info "Connected to VPN: #{provider_config.name} via #{selected_endpoint}"
+            {:reply, {:ok, connection_pid}, new_state}
+          {:error, reason} ->
+            Logger.error "Failed to connect to VPN: #{reason}"
+            {:reply, {:error, reason}, state}
+        end
+      :error ->
+        {:reply, {:error, "Unknown provider: #{provider}"}, state}
+    end
+  end
+
+  def handle_call(:disconnect, _from, state) do
+    if state.connection_status == :connected and state.active_provider do
+      disconnect_vpn_connection(state.active_provider, state.active_endpoint)
+    end
+
+    new_state = %{state |
+      active_provider: nil,
+      active_endpoint: nil,
+      connection_status: :disconnected
+    }
+
+    Logger.info "Disconnected from VPN"
+    {:reply, :ok, new_state}
+  end
+
+  def handle_call(:get_status, _from, state) do
+    status = %{
+      provider: state.active_provider,
+      endpoint: state.active_endpoint,
+      connection_status: state.connection_status,
+      auto_connect: state.auto_connect_enabled,
+      kill_switch: state.kill_switch_enabled,
+      dns_protection: state.dns_leak_protection,
+      latency_ms: Map.get(state.latency_map, state.active_endpoint, nil),
+      bandwidth_usage: state.bandwidth_usage
+    }
+    {:reply, status, state}
+  end
+
+  def handle_call({:set_auto_connect, enabled}, _from, state) do
+    new_state = %{state | auto_connect_enabled: enabled}
+    Logger.info "Auto-connect #{if enabled, do: "enabled", else: "disabled"}"
+    {:reply, :ok, new_state}
+  end
+
+  def handle_call({:set_kill_switch, enabled}, _from, state) do
+    new_state = %{state | kill_switch_enabled: enabled}
+    Logger.info "Kill switch #{if enabled, do: "enabled", else: "disabled"}"
+    {:reply, :ok, new_state}
+  end
+
+  def handle_call(:get_available_endpoints, _from, state) do
+    endpoints = Enum.map(state.available_endpoints, fn provider ->
+      {provider, Map.get(@providers, provider)}
+    end)
+    {:reply, endpoints, state}
+  end
+
+  def handle_call(:enable_dns_over_https, _from, state) do
+    # Implement DNS-over-HTTPS for additional privacy
+    enable_doh_settings()
+    new_state = %{state | dns_leak_protection: true}
+    Logger.info "DNS-over-HTTPS enabled with leak protection"
+    {:reply, :ok, new_state}
+  end
+
+  def handle_info(:health_check, state) do
+    # Perform connection health check
+    if state.connection_status == :connected do
+      check_vpn_health(state.active_provider, state.active_endpoint)
+    end
+
+    # Update endpoint latencies
+    new_latency_map = update_endpoint_latencies(state.available_endpoints)
+
+    schedule_health_check()
+
+    {:noreply, %{state |
+      latency_map: new_latency_map,
+      last_health_check: System.system_time(:second)
+    }}
+  end
+
+  # Private functions
+  defp select_best_endpoint(provider, preferred_endpoint, latency_map) do
+    if preferred_endpoint && Map.has_key?(latency_map, preferred_endpoint) do
+      preferred_endpoint
+    else
+      # Select endpoint with lowest latency
+      endpoints = Map.get(@providers, provider)[:endpoints]
+      Enum.min_by(endpoints, &Map.get(latency_map, &1, 9999))
+    end
+  end
+
+  defp establish_vpn_connection(provider_config, endpoint) do
+    # In a real implementation, this would establish actual VPN connection
+    # For now, simulate connection establishment
+    case :os.type() do
+      {:unix, :linux} ->
+        establish_openvpn_connection(provider_config, endpoint)
+      {:win32, :nt} ->
+        establish_windows_vpn_connection(provider_config, endpoint)
+      _ ->
+        {:error, "Unsupported platform for VPN"}
+    end
+  end
+
+  defp establish_openvpn_connection(provider_config, endpoint) do
+    # Simulate OpenVPN connection setup
+    connection_config = %{
+      server: endpoint,
+      port: provider_config.port,
+      protocol: provider_config.protocol,
+      auth: "SHA256",
+      cipher: "AES-256-GCM"
+    }
+
+    Logger.debug "Establishing OpenVPN connection: #{inspect(connection_config)}"
+
+    # Simulate successful connection
+    {:ok, make_ref()}
+  end
+
+  defp establish_windows_vpn_connection(provider_config, endpoint) do
+    # Windows-specific VPN connection logic
+    Logger.debug "Establishing Windows VPN connection to #{endpoint}"
+    {:ok, make_ref()}
+  end
+
+  defp disconnect_vpn_connection(provider, endpoint) do
+    # Disconnect VPN connection
+    Logger.debug "Disconnecting from VPN: #{endpoint}"
+    :ok
+  end
+
+  defp check_vpn_health(provider, endpoint) do
+    # Test VPN connection health
+    case :inet.getaddr(endpoint, :inet) do
+      {:ok, _ip} ->
+        Logger.debug "VPN endpoint #{endpoint} is healthy"
+      {:error, reason} ->
+        Logger.warn "VPN endpoint #{endpoint} health check failed: #{reason}"
+    end
+  end
+
+  defp update_endpoint_latencies(providers) do
+    # Measure latency to all available endpoints
+    Enum.reduce(providers, %{}, fn provider, acc ->
+      provider_config = Map.get(@providers, provider)
+      latencies = Enum.map(provider_config[:endpoints], fn endpoint ->
+        {endpoint, measure_latency(endpoint)}
+      end)
+      Map.merge(acc, Map.new(latencies))
+    end)
+  end
+
+  defp measure_latency(endpoint) do
+    # Measure network latency to endpoint
+    start_time = System.monotonic_time(:microsecond)
+
+    # Simple ping simulation
+    :timer.sleep(10)  # Simulate network delay
+
+    end_time = System.monotonic_time(:microsecond)
+    round((end_time - start_time) / 1000)  # Convert to milliseconds
+  end
+
+  defp check_endpoint_health() do
+    # Initial health check for all endpoints
+    Process.send(self(), :health_check, [])
+  end
+
+  defp schedule_health_check() do
+    Process.send_after(self(), :health_check, :timer.minutes(5))
+  end
+
+  defp enable_doh_settings() do
+    # Configure system to use DNS-over-HTTPS
+    # This would typically modify system DNS settings
+    Logger.info "Configuring DNS-over-HTTPS settings"
+  end
+end

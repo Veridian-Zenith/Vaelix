@@ -32,9 +32,9 @@ if [ ! -d "build" ]; then
 fi
 cd build
 
-# Run qmake
-echo "Running qmake..."
-qmake ../Vaelix.pro
+# Run qmake6
+echo "Running qmake6..."
+qmake6 ../Vaelix.pro
 
 # Build with make
 echo "Building project..."
