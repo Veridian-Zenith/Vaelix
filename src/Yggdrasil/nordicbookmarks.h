@@ -8,6 +8,8 @@
 #include <QPushButton>
 #include <QListWidget>
 #include <QLabel>
+#include <QUrl>
+#include <QListWidgetItem>
 
 class NordicBookmarks : public QWidget
 {
@@ -15,6 +17,9 @@ class NordicBookmarks : public QWidget
 
 public:
     explicit NordicBookmarks(QWidget *parent = nullptr);
+
+signals:
+    void openUrl(const QUrl &url);
 
 private slots:
     void addBookmark();

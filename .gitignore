@@ -1,0 +1,27 @@
+# Build directories
+build/
+build_cmake/
+build_cmake/
+
+# Qt build files
+*.o
+*.moc
+*.qmlc
+*.jsc
+Makefile
+*.pro.user
+*.pro.user.*
+*.qmake.stash
+*.qmlc
+
+# IDE files
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Vaelix specific
+vaelix
+session_*.json
+*.log

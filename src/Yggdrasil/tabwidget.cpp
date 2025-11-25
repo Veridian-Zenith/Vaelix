@@ -1,10 +1,12 @@
 #include "tabwidget.h"
 #include <QWebEngineSettings>
+#include <QWebEngineHistory>
 
 TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent)
 {
     setTabsClosable(true);
     setMovable(true);
+    currentZoomLevel = 100;
 
     // Nordic floating tab style
     setStyleSheet(R"(
@@ -73,6 +75,11 @@ void TabWidget::navigateInCurrentTab(const QUrl &url)
     }
 }
 
+void TabWidget::navigateToUrl(const QUrl &url)
+{
+    navigateInCurrentTab(url);
+}
+
 QWidget* TabWidget::createTabContent(const QUrl &url)
 {
     QWidget *container = new QWidget;
@@ -99,7 +106,7 @@ QWidget* TabWidget::createTabContent(const QUrl &url)
     });
 
     connect(webView, &QWebEngineView::urlChanged, [this, webView](const QUrl &url) {
-        if (url.scheme() == "file" || url.host() == "www.google.com") {
+        if (url.scheme() == "file" || url.host() == "www.startpage.com") {
             return; // Don't track certain URLs
         }
         qDebug() << "Navigation to:" << url.toString();
@@ -123,4 +130,106 @@ void TabWidget::tabCloseRequested(int index)
 void TabWidget::createNewTab()
 {
     addNewTab();
+}
+
+void TabWidget::goBack()
+{
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView && webView->history()->canGoBack()) {
+        webView->history()->back();
+    }
+}
+
+void TabWidget::goForward()
+{
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView && webView->history()->canGoForward()) {
+        webView->history()->forward();
+    }
+}
+
+void TabWidget::reload()
+{
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView) {
+        webView->reload();
+    }
+}
+
+void TabWidget::stopLoading()
+{
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView) {
+        webView->stop();
+    }
+}
+
+void TabWidget::zoomIn()
+{
+    currentZoomLevel = qMin(currentZoomLevel + 10, 500);
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView) {
+        webView->setZoomFactor(currentZoomLevel / 100.0);
+    }
+}
+
+void TabWidget::zoomOut()
+{
+    currentZoomLevel = qMax(currentZoomLevel - 10, 50);
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView) {
+        webView->setZoomFactor(currentZoomLevel / 100.0);
+    }
+}
+
+void TabWidget::zoomReset()
+{
+    currentZoomLevel = 100;
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView) {
+        webView->setZoomFactor(1.0);
+    }
+}
+
+int TabWidget::getZoomLevel() const
+{
+    return currentZoomLevel;
+}
+
+void TabWidget::showDeveloperTools()
+{
+    QWebEngineView *webView = getCurrentWebView();
+    if (webView) {
+        // Use Qt6 compatible dev tools approach
+        webView->page()->triggerAction(QWebEnginePage::InspectElement);
+    }
+}
+
+QWebEngineView* TabWidget::currentWebView() const
+{
+    return getCurrentWebView();
+}
+
+QWebEngineView* TabWidget::getCurrentWebView() const
+{
+    QWidget *currentTab = widget(currentIndex());
+    if (currentTab) {
+        return currentTab->findChild<QWebEngineView*>();
+    }
+    return nullptr;
+}
+
+void TabWidget::tabTitleChanged(const QString &title)
+{
+    emit titleChanged(title);
+}
+
+void TabWidget::loadProgress(int progress)
+{
+    emit loadProgressChanged(progress);
+}
+
+void TabWidget::onUrlChanged(const QUrl &url)
+{
+    emit urlChanged(url);
 }

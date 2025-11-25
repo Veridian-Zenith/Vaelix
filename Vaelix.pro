@@ -1,7 +1,7 @@
-QT += core gui widgets webenginewidgets webengine
+QT += core gui widgets webenginewidgets
 TARGET = Vaelix
 TEMPLATE = app
-CONFIG += c++17
+CONFIG += c++20
 
 # Nordic architecture naming
 SOURCES += \
@@ -20,8 +20,9 @@ HEADERS += \
 # Nordic warm color scheme
 DEFINES += NORDIC_WARM_COLORS
 
-# Windows-specific
-win32 {
-    LIBS += -luser32 -lkernel32
-    CONFIG += windows
+# Linux-specific
+unix {
+    CONFIG += console
+    QMAKE_CXXFLAGS += -std=c++20 -O3 -pipe -march=native
+    QMAKE_LFLAGS += -flto=thin -fuse-ld=lld
 }
