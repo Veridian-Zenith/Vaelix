@@ -937,7 +937,6 @@ apps/sieben-elixir/.elixir_ls/
 # SIEBEN-UI (EFL Interface Layer)
 apps/sieben-ui/build/
 apps/sieben-ui/build/themes/
-apps/sieben-ui/src/
 apps/sieben-ui/src/*.o
 apps/sieben-ui/src/*.obj
 apps/sieben-ui/src/*.lib
