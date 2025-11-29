@@ -1,0 +1,1 @@
+{application,configparser_ex,[{modules,['Elixir.ConfigParser','Elixir.ConfigParser.ParseState']},{optional_applications,[]},{applications,[kernel,stdlib,elixir]},{description,"A module that parses INI-like files. Not unlike the Python configparser package."},{registered,[]},{vsn,"4.0.0"}]}.

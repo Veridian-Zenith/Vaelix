@@ -1,0 +1,266 @@
+syntax = "proto3";
+
+package vaelix.plugin;
+
+// Plugin API Protocol - Defines IPC for Racket plugin system integration
+// This protocol handles plugin lifecycle, theme management, and extension APIs
+
+message PluginInfo {
+    string plugin_id = 1;
+    string name = 2;
+    string version = 3;
+    string description = 4;
+    string author = 5;
+    repeated string permissions = 6;
+    repeated string dependencies = 7;
+    bool is_enabled = 8;
+    bool is_loaded = 9;
+    double cpu_usage = 10;
+    int64 memory_usage = 11;
+}
+
+message PluginLoadRequest {
+    string plugin_path = 1;
+    string plugin_id = 2;
+    bool enable_immediately = 3;
+    map<string, string> config = 4;
+}
+
+message PluginLoadResponse {
+    bool success = 1;
+    string error_message = 2;
+    PluginInfo plugin_info = 3;
+    repeated string warnings = 4;
+}
+
+message PluginUnloadRequest {
+    string plugin_id = 1;
+    bool force_unload = 2;
+}
+
+message PluginUnloadResponse {
+    bool success = 1;
+    string error_message = 2;
+    repeated string cleanup_tasks = 3;
+}
+
+message PluginEvent {
+    string event_type = 1; // "navigate", "tab_open", "tab_close", "permission_request"
+    string plugin_id = 2;
+    map<string, string> data = 3;
+    int64 timestamp = 4;
+}
+
+message PluginEventHook {
+    string event_type = 1;
+    string plugin_id = 2;
+    string handler_name = 3;
+    bool is_active = 4;
+}
+
+message RegisterEventHookRequest {
+    string plugin_id = 1;
+    string event_type = 2;
+    string handler_name = 3;
+}
+
+message RegisterEventHookResponse {
+    bool success = 1;
+    string error_message = 2;
+    string hook_id = 3;
+}
+
+message UnregisterEventHookRequest {
+    string plugin_id = 1;
+    string event_type = 2;
+    string hook_id = 3;
+}
+
+message UnregisterEventHookResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
+message ThemeInfo {
+    string theme_id = 1;
+    string name = 2;
+    string author = 3;
+    string version = 4;
+    string description = 5;
+    repeated string variants = 6; // "light", "dark", "auto"
+    bytes preview_image = 7;
+    map<string, string> properties = 8;
+}
+
+message ApplyThemeRequest {
+    string theme_id = 1;
+    string variant = 2;
+    bool restart_required = 3;
+}
+
+message ApplyThemeResponse {
+    bool success = 1;
+    string error_message = 2;
+    repeated string affected_components = 3;
+}
+
+message GetThemesRequest {
+    bool include_preview_images = 4;
+    string category = 5; // "official", "user", "installed"
+}
+
+message GetThemesResponse {
+    repeated ThemeInfo themes = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message PluginConfigUpdate {
+    string plugin_id = 1;
+    map<string, string> config = 2;
+    string updated_by = 3;
+    int64 timestamp = 4;
+}
+
+message GetPluginConfigRequest {
+    string plugin_id = 1;
+    repeated string config_keys = 2;
+}
+
+message GetPluginConfigResponse {
+    map<string, string> config = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message SetPluginConfigRequest {
+    string plugin_id = 1;
+    map<string, string> config = 2;
+    bool validate = 3;
+}
+
+message SetPluginConfigResponse {
+    bool success = 1;
+    string error_message = 2;
+    map<string, string> validated_config = 3;
+}
+
+message NetworkRequest {
+    string request_id = 1;
+    string url = 2;
+    string method = 3; // "GET", "POST", "PUT", "DELETE", etc.
+    map<string, string> headers = 4;
+    bytes body = 5;
+    bool allow_redirects = 6;
+    int32 timeout_ms = 7;
+}
+
+message NetworkResponse {
+    string request_id = 1;
+    int32 status_code = 2;
+    map<string, string> headers = 3;
+    bytes body = 4;
+    int64 response_time_ms = 5;
+    bool success = 6;
+    string error_message = 7;
+}
+
+message MakeNetworkRequestRequest {
+    string plugin_id = 1;
+    NetworkRequest request = 2;
+}
+
+message MakeNetworkRequestResponse {
+    string request_id = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message WidgetCreateRequest {
+    string plugin_id = 1;
+    string widget_type = 2; // "button", "text", "image", "container"
+    string widget_id = 3;
+    int32 window_id = 4;
+    int32 tab_id = 5;
+    map<string, string> properties = 6;
+}
+
+message WidgetCreateResponse {
+    string widget_id = 7;
+    bool success = 8;
+    string error_message = 9;
+    map<string, string> widget_data = 10;
+}
+
+message WidgetModifyRequest {
+    string plugin_id = 1;
+    string widget_id = 2;
+    map<string, string> properties = 3;
+    bool partial_update = 4;
+}
+
+message WidgetModifyResponse {
+    bool success = 1;
+    string error_message = 2;
+    map<string, string> updated_properties = 3;
+}
+
+// gRPC Service Definition
+service PluginAPIService {
+    // Plugin lifecycle management
+    rpc LoadPlugin(PluginLoadRequest) returns (PluginLoadResponse);
+    rpc UnloadPlugin(PluginUnloadRequest) returns (PluginUnloadResponse);
+    rpc ListPlugins(PluginListRequest) returns (PluginListResponse);
+
+    // Event hook management
+    rpc RegisterEventHook(RegisterEventHookRequest) returns (RegisterEventHookResponse);
+    rpc UnregisterEventHook(UnregisterEventHookRequest) returns (UnregisterEventHookResponse);
+    rpc ListEventHooks(PluginListRequest) returns (PluginEventHooksResponse);
+
+    // Theme management
+    rpc ApplyTheme(ApplyThemeRequest) returns (ApplyThemeResponse);
+    rpc GetThemes(GetThemesRequest) returns (GetThemesResponse);
+    rpc InstallTheme(InstallThemeRequest) returns (InstallThemeResponse);
+
+    // Configuration management
+    rpc GetPluginConfig(GetPluginConfigRequest) returns (GetPluginConfigResponse);
+    rpc SetPluginConfig(SetPluginConfigRequest) returns (SetPluginConfigResponse);
+
+    // Network and UI operations
+    rpc MakeNetworkRequest(MakeNetworkRequestRequest) returns (MakeNetworkRequestResponse);
+    rpc CreateWidget(WidgetCreateRequest) returns (WidgetCreateResponse);
+    rpc ModifyWidget(WidgetModifyRequest) returns (WidgetModifyResponse);
+
+    // Real-time plugin events
+    rpc PluginEventStream(stream PluginEvent) returns (stream PluginEvent);
+}
+
+// Additional request/response messages for service methods
+message PluginListRequest {
+    bool include_disabled = 1;
+    string filter_type = 2; // "all", "enabled", "disabled", "system", "user"
+}
+
+message PluginListResponse {
+    repeated PluginInfo plugins = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message PluginEventHooksResponse {
+    repeated PluginEventHook hooks = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message InstallThemeRequest {
+    string theme_path = 1;
+    string theme_id = 2;
+    bool make_default = 3;
+}
+
+message InstallThemeResponse {
+    bool success = 1;
+    string error_message = 2;
+    ThemeInfo theme_info = 3;
+}

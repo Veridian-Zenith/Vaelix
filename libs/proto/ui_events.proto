@@ -1,0 +1,210 @@
+syntax = "proto3";
+
+package vaelix.ui;
+
+// UI Events Protocol - Defines IPC for UI interactions and window management
+// This protocol handles user input, window events, and UI state updates
+
+message WindowInfo {
+    int32 window_id = 1;
+    int32 width = 2;
+    int32 height = 3;
+    bool is_fullscreen = 4;
+    bool is_maximized = 5;
+    string title = 6;
+    int32 screen_x = 7;
+    int32 screen_y = 8;
+    double opacity = 9;
+    bool always_on_top = 10;
+}
+
+message TabStateInfo {
+    int32 tab_id = 1;
+    string title = 2;
+    string url = 3;
+    bool is_active = 4;
+    bool is_loading = 5;
+    bool is_pinned = 6;
+    bytes favicon = 7;
+    int32 unread_count = 8;
+    string status = 9; // "normal", "loading", "error", "ready"
+}
+
+message WindowResizeEvent {
+    int32 window_id = 1;
+    int32 new_width = 2;
+    int32 new_height = 3;
+    int32 old_width = 4;
+    int32 old_height = 5;
+    int64 timestamp = 6;
+}
+
+message WindowMoveEvent {
+    int32 window_id = 1;
+    int32 new_x = 2;
+    int32 new_y = 3;
+    int32 old_x = 4;
+    int32 old_y = 5;
+    int64 timestamp = 6;
+}
+
+message KeyboardEvent {
+    int32 window_id = 1;
+    int32 tab_id = 2;
+    string key_code = 3;
+    string key_name = 4;
+    bool is_pressed = 5;
+    bool is_ctrl = 6;
+    bool is_alt = 7;
+    bool is_shift = 8;
+    bool is_meta = 9;
+    int32 repeat_count = 10;
+}
+
+message MouseEvent {
+    int32 window_id = 1;
+    int32 tab_id = 2;
+    double x = 3;
+    double y = 4;
+    string button = 5; // "left", "right", "middle", "none"
+    bool is_pressed = 6;
+    int32 click_count = 7;
+    int32 wheel_delta = 8;
+}
+
+message NavigationRequest {
+    int32 window_id = 1;
+    int32 tab_id = 2;
+    string url = 3;
+    bool new_tab = 4;
+    bool background_tab = 5;
+    bool force_reload = 6;
+}
+
+message TabOperationRequest {
+    int32 window_id = 1;
+    int32 tab_id = 2;
+    string operation = 3; // "close", "pin", "unpin", "duplicate", "reload"
+    map<string, string> parameters = 4;
+}
+
+message WindowOperationRequest {
+    int32 window_id = 1;
+    string operation = 2; // "new_tab", "fullscreen", "minimize", "maximize", "restore", "close"
+    map<string, string> parameters = 3;
+}
+
+message ThemeChangeEvent {
+    string theme_name = 4;
+    string variant = 5; // "light", "dark", "auto"
+    bool animation_enabled = 6;
+    double animation_speed = 7;
+}
+
+message FocusChangeEvent {
+    int32 window_id = 1;
+    int32 old_tab_id = 2;
+    int32 new_tab_id = 3;
+    bool window_focus = 4;
+}
+
+message UIStateUpdate {
+    int32 window_id = 1;
+    repeated TabStateInfo tabs = 2;
+    WindowInfo window_info = 3;
+    string status_message = 4;
+    bool loading_indicator = 5;
+    double progress_indicator = 6;
+    map<string, string> ui_state = 7;
+}
+
+message ShortcutEvent {
+    string shortcut = 1; // e.g., "Ctrl+T", "F5", "Ctrl+W"
+    int32 window_id = 2;
+    bool consume = 3; // whether the shortcut was handled
+}
+
+message PermissionRequest {
+    int32 window_id = 1;
+    int32 tab_id = 2;
+    string permission_type = 3; // "geolocation", "notifications", "camera", "microphone"
+    string origin = 4;
+    string details = 5;
+}
+
+message FileDownloadEvent {
+    int32 tab_id = 1;
+    string url = 2;
+    string filename = 3;
+    int64 content_length = 4;
+    string content_type = 5;
+    bool is_auto_download = 6;
+}
+
+// gRPC Service Definition
+service UIEventsService {
+    // Event streams for real-time UI updates
+    rpc StreamWindowEvents(stream WindowEvent) returns (stream WindowEvent);
+    rpc StreamTabEvents(stream TabEvent) returns (stream TabEvent);
+    rpc StreamInputEvents(stream InputEvent) returns (stream InputEvent);
+
+    // Request handlers
+    rpc HandleNavigation(NavigationRequest) returns (UIStateUpdate);
+    rpc HandleTabOperation(TabOperationRequest) returns (UIStateUpdate);
+    rpc HandleWindowOperation(WindowOperationRequest) returns (UIStateUpdate);
+    rpc HandlePermission(PermissionRequest) returns (UIStateUpdate);
+
+    // State queries
+    rpc GetUIState(UIStateQuery) returns (UIStateUpdate);
+    rpc GetWindowInfo(WindowInfoRequest) returns (WindowInfo);
+    rpc GetTabStates(TabStatesRequest) returns (UIStateUpdate);
+}
+
+message WindowEvent {
+    oneof event {
+        WindowResizeEvent resize = 1;
+        WindowMoveEvent move = 2;
+        FocusChangeEvent focus_change = 3;
+        ThemeChangeEvent theme_change = 4;
+        string window_error = 5;
+    }
+    int32 window_id = 6;
+    int64 timestamp = 7;
+}
+
+message TabEvent {
+    oneof event {
+        NavigationRequest navigation = 1;
+        TabOperationRequest operation = 2;
+        FileDownloadEvent download = 3;
+        string tab_error = 4;
+    }
+    int32 tab_id = 5;
+    int32 window_id = 6;
+    int64 timestamp = 7;
+}
+
+message InputEvent {
+    oneof event {
+        KeyboardEvent keyboard = 1;
+        MouseEvent mouse = 2;
+        ShortcutEvent shortcut = 3;
+    }
+    int32 window_id = 4;
+    int64 timestamp = 5;
+}
+
+// Query messages
+message UIStateQuery {
+    int32 window_id = 1;
+    repeated string fields = 2; // which fields to include
+}
+
+message WindowInfoRequest {
+    int32 window_id = 1;
+}
+
+message TabStatesRequest {
+    int32 window_id = 1;
+    bool include_inactive = 2;
+}
