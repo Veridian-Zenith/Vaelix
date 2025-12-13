@@ -115,7 +115,9 @@ Each UI component (tabs, address bar, overlays) behaves like a ring or rune with
 - **Clang** 21.1.6 with C++20 support and thin LTO
 - **Racket** 8.18
 - **EFL** (Enlightenment Foundation Libraries) 1.28.1
-- **CEF** (Chromium Embedded Framework) - automatically downloaded
+- **CEF** (Chromium Embedded Framework) 114.0.5735.134
+- **Protocol Buffers** (protoc) 23.4
+- **gRPC** 1.60.0
 - **ccache** (for build optimization) (Available via system)
 - **CMake** (build system generator)
 - **Development Tools** (make, pkg-config, etc.)
@@ -368,3 +370,10 @@ Full license text: [OSL-3.0](https://opensource.org/licenses/OSL-3.0)
   <em>Where browsers transcend their limitations</em><br><br>
   Built with ❤️ by <strong>Dae Euhwa</strong> and the <strong>Veridian Zenith</strong> team
 </div>
+
+
+© 2025 Veridian Zenith
+
+Code in this repository is licensed under the Open Software License v3.0 (OSL v3).  
+All visual designs, UI layouts, and assets are copyrighted by Veridian Zenith.  
+Use, modification, or redistribution of code or design assets is subject to compliance with these terms.

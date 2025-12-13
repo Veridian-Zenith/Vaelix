@@ -38,14 +38,15 @@ find_package(PkgConfig REQUIRED)
 # EFL Configuration
 pkg_check_modules(EFL REQUIRED efl ecore elementary evas eina)
 
-# CEF Configuration
-set(CEF_ROOT_DIR ${CMAKE_SOURCE_DIR}/../../cef_artifacts)
-include_directories(${CEF_ROOT_DIR}/include)
-link_directories(${CEF_ROOT_DIR}/Release)
-
-# CEF Resources
-set(CEF_RESOURCES_DIR ${CEF_ROOT_DIR}/Resources)
-set(CEF_LOCALES_DIR ${CEF_RESOURCES_DIR}/locales)
+# WPE WebKit Configuration - EFL + WPE only (no GTK)
+pkg_check_modules(WPE REQUIRED wpewebkit glib-2.0)
+if(WPE_FOUND)
+    message(STATUS "Found WPE WebKit via pkg-config")
+    message(STATUS "WPE Include dirs: ${WPE_INCLUDE_DIRS}")
+    message(STATUS "WPE Libraries: ${WPE_LIBRARIES}")
+else()
+    message(FATAL_ERROR "WPE WebKit not found. Please install wpewebkit and glib-2.0")
+endif()
 
 # Build Targets
 add_executable(sieben-native
@@ -61,16 +62,14 @@ target_include_directories(sieben-native PRIVATE
     ${Protobuf_INCLUDE_DIRS}
     ${gRPC_INCLUDE_DIRS}
     ${EFL_INCLUDE_DIRS}
+    ${WPE_INCLUDE_DIRS}
 )
 
 target_link_libraries(sieben-native
     ${Protobuf_LIBRARIES}
     ${gRPC_LIBRARIES}
     ${EFL_LIBRARIES}
-    cef_sandbox
-    libcef
-    libEGL
-    libGLESv2
+    ${WPE_LIBRARIES}
     pthread
     dl
 )
@@ -78,8 +77,8 @@ target_link_libraries(sieben-native
 # Compile Definitions
 target_compile_definitions(sieben-native PRIVATE
     ENABLE_TINY_LTO
-    CEF_VERSION="142.0.15"
     VAELIX_VERSION="0.0.2"
+    USE_WPE_WEBKIT=1
 )
 
 # Set optimization flags for Alder Lake
@@ -93,26 +92,6 @@ target_compile_options(sieben-native PRIVATE
 # Install Targets
 install(TARGETS sieben-native DESTINATION bin)
 
-# Install CEF resources
-install(DIRECTORY ${CEF_RESOURCES_DIR}/
-    DESTINATION share/vaelix/resources
-    FILES_MATCHING PATTERN "*.pak"
-    PATTERN "locales" EXCLUDE
-)
-
-install(DIRECTORY ${CEF_LOCALES_DIR}/
-    DESTINATION share/vaelix/resources/locales
-    FILES_MATCHING PATTERN "*.pak"
-)
-
-# Install CEF libraries
-install(FILES
-    ${CEF_ROOT_DIR}/Release/libcef.so
-    ${CEF_ROOT_DIR}/Release/libEGL.so
-    ${CEF_ROOT_DIR}/Release/libGLESv2.so
-    DESTINATION lib
-)
-
 # Debug and Profile Information
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(sieben-native PRIVATE DEBUG_BUILD)
@@ -122,3 +101,12 @@ if(ENABLE_PROFILING)
     target_compile_options(sieben-native PRIVATE -pg)
     target_link_options(sieben-native PRIVATE -pg)
 endif()
+
+# Print final configuration
+message(STATUS "=== Vaelix Build Configuration ===")
+message(STATUS "EFL Libraries: ${EFL_LIBRARIES}")
+message(STATUS "WPE WebKit: ${WPE_FOUND}")
+message(STATUS "Include directories: ${WPE_INCLUDE_DIRS}")
+message(STATUS "Libraries: ${WPE_LIBRARIES}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "=================================")
