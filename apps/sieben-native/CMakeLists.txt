@@ -18,7 +18,7 @@ pkg_check_modules(GBM REQUIRED gbm)
 # CEF configuration
 set(CEF_ROOT "${CMAKE_SOURCE_DIR}/cef_artifacts")
 set(CEF_INCLUDE_DIR "${CEF_ROOT}/include")
-set(CEF_LIBRARY_DIR "${CEF_ROOT}/Release")  # Use Release build as requested
+set(CEF_LIBRARY_DIR "${CEF_ROOT}/Release") # Use Release build as requested
 
 # Intel-specific libraries for hardware acceleration
 find_library(VA_LIB va)
@@ -32,7 +32,7 @@ include_directories(
     ${XKBCOMMON_INCLUDE_DIRS}
     ${GBM_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/cef_artifacts/include
-    ${CMAKE_SOURCE_DIR}/cef_artifacts  # Add this for CEF's relative includes
+    ${CMAKE_SOURCE_DIR}/cef_artifacts # Add this for CEF's relative includes
 )
 
 # Link directories
