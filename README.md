@@ -14,6 +14,11 @@
 
 ---
 
+## Highly Important Notice for Developers!!
+
+> I, @daedaevibin, highly implore you to read and follow the instructions found at this file before doing anything else or you will suffer greatly.
+- cef_artifacts/CmakeLists.txt
+
 ## Status
 
 > ⚠️ Experimental but functional as a full browser replacement

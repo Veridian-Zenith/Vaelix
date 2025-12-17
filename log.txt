@@ -1,0 +1,23 @@
+/usr/bin/cmake -S/home/dae/Repos/Vaelix -B/home/dae/Repos/Vaelix/build --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/dae/Repos/Vaelix/build/CMakeFiles /home/dae/Repos/Vaelix/build//CMakeFiles/progress.marks
+make  -f CMakeFiles/Makefile2 all
+make[1]: Entering directory '/home/dae/Repos/Vaelix/build'
+make  -f apps/sieben-native/CMakeFiles/sieben-native.dir/build.make apps/sieben-native/CMakeFiles/sieben-native.dir/depend
+make[2]: Entering directory '/home/dae/Repos/Vaelix/build'
+cd /home/dae/Repos/Vaelix/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/dae/Repos/Vaelix /home/dae/Repos/Vaelix/apps/sieben-native /home/dae/Repos/Vaelix/build /home/dae/Repos/Vaelix/build/apps/sieben-native /home/dae/Repos/Vaelix/build/apps/sieben-native/CMakeFiles/sieben-native.dir/DependInfo.cmake "--color="
+make[2]: Leaving directory '/home/dae/Repos/Vaelix/build'
+make  -f apps/sieben-native/CMakeFiles/sieben-native.dir/build.make apps/sieben-native/CMakeFiles/sieben-native.dir/build
+make[2]: Entering directory '/home/dae/Repos/Vaelix/build'
+[ 33%] Building CXX object apps/sieben-native/CMakeFiles/sieben-native.dir/src/main.cpp.o
+cd /home/dae/Repos/Vaelix/build/apps/sieben-native && /usr/bin/ccache  clang++  -I/home/dae/Repos/Vaelix/apps/sieben-native/../../cef_artifacts/include -O3 -pipe -march=alderlake -mtune=alderlake -fstack-protector-strong -fno-plt -flto=thin --std=c++20 -std=gnu++20 -fno-lto -MD -MT apps/sieben-native/CMakeFiles/sieben-native.dir/src/main.cpp.o -MF CMakeFiles/sieben-native.dir/src/main.cpp.o.d -o CMakeFiles/sieben-native.dir/src/main.cpp.o -c /home/dae/Repos/Vaelix/apps/sieben-native/src/main.cpp
+[ 66%] Building CXX object apps/sieben-native/CMakeFiles/sieben-native.dir/src/wayland_handler.cpp.o
+cd /home/dae/Repos/Vaelix/build/apps/sieben-native && /usr/bin/ccache  clang++  -I/home/dae/Repos/Vaelix/apps/sieben-native/../../cef_artifacts/include -O3 -pipe -march=alderlake -mtune=alderlake -fstack-protector-strong -fno-plt -flto=thin --std=c++20 -std=gnu++20 -fno-lto -MD -MT apps/sieben-native/CMakeFiles/sieben-native.dir/src/wayland_handler.cpp.o -MF CMakeFiles/sieben-native.dir/src/wayland_handler.cpp.o.d -o CMakeFiles/sieben-native.dir/src/wayland_handler.cpp.o -c /home/dae/Repos/Vaelix/apps/sieben-native/src/wayland_handler.cpp
+[100%] Linking CXX executable ../../bin/sieben-native
+cd /home/dae/Repos/Vaelix/build/apps/sieben-native && /usr/bin/cmake -E cmake_link_script CMakeFiles/sieben-native.dir/link.txt --verbose=1
+/usr/bin/ccache  clang++ -O3 -pipe -march=alderlake -mtune=alderlake -fstack-protector-strong -fno-plt -flto=thin --std=c++20 -Wl,-O1 -Wl,--as-needed -fuse-ld=lld -fno-lto -Xlinker --dependency-file=CMakeFiles/sieben-native.dir/link.d "CMakeFiles/sieben-native.dir/src/main.cpp.o" "CMakeFiles/sieben-native.dir/src/wayland_handler.cpp.o" -o ../../bin/sieben-native  -Wl,-rpath,"\$ORIGIN/../cef_artifacts/Release:/home/dae/Repos/Vaelix/apps/sieben-native/../../cef_artifacts/Release" /home/dae/Repos/Vaelix/apps/sieben-native/../../cef_artifacts/build/libcef_dll_wrapper/libcef_dll_wrapper.a /home/dae/Repos/Vaelix/apps/sieben-native/../../cef_artifacts/Release/libcef.so -lEGL -lGLESv2 -lwayland-cursor -lwayland-egl -lwayland-client -lm -lxkbcommon -lgbm -lva -lva-drm -lvulkan -ldl -lrt -lpthread /usr/lib64/libtcmalloc.so
+cd /home/dae/Repos/Vaelix/build/apps/sieben-native && /usr/bin/cmake -E copy_if_different /home/dae/Repos/Vaelix/apps/sieben-native/../../cef_artifacts/Release/libcef.so /home/dae/Repos/Vaelix/build/bin/
+cd /home/dae/Repos/Vaelix/build/apps/sieben-native && /usr/bin/cmake -E copy_directory /home/dae/Repos/Vaelix/apps/sieben-native/../../cef_artifacts/Resources /home/dae/Repos/Vaelix/build/bin/
+make[2]: Leaving directory '/home/dae/Repos/Vaelix/build'
+[100%] Built target sieben-native
+make[1]: Leaving directory '/home/dae/Repos/Vaelix/build'
+/usr/bin/cmake -E cmake_progress_start /home/dae/Repos/Vaelix/build/CMakeFiles 0
