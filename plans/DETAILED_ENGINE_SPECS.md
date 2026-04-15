@@ -86,21 +86,21 @@ The `io_uring_scheduler` monitors the task graph. If a task is waiting on an IPC
 
 ### 4.1 Module Map (`export module`)
 
-We abandon `#include` for core logic to achieve massive compile-time improvements.
+Vaelix strictly uses C++26 modules for all new code. Source files use the `.ixx` extension for module interfaces.
 
-- `module vaelix.core;` (Types, Memory arenas)
-- `module vaelix.ipc;` (SHM, Signaling)
-- `module vaelix.dom;` (HTML/CSS parsing)
-- `module vaelix.vns;` (Networking)
+- `src/core/core.ixx` -> `module vaelix.core;` (Process orchestration, Lifecycle)
+- `src/ipc/ipc.ixx` -> `module vaelix.ipc;` (SHM, Ring Buffers, Message Types)
+- `src/ipc/scheduler.ixx` -> `module vaelix.ipc.scheduler;` (io_uring integration, std::execution)
+- `src/ui/ui.ixx` -> `module vaelix.ui;` (GTK4/Libadwaita integration)
+- `src/vns/vns.ixx` -> `module vaelix.vns;` (Networking/QUIC)
 
 ### 4.2 Compiler Flagset
 
 The CMake build enforces strict LLVM flags:
 
-- `-std=c++26 -fmodules`
-- `-O3 -march=native -flto=thin` (Extreme performance via ThinLTO).
-- `-fsanitize=address,undefined` (Enabled only in Debug/CI builds).
-- `-fno-rtti -fno-exceptions` (Optional exploration for strict performance, though exceptions may be used for fatal SHM bounds violations).
+- `-std=c++26 -fmodules -fbuiltin-module-map`
+- `-O3 -march=native -flto=thin`
+- `-luring` (For io_uring)
 
 ### 4.3 Third-Party Integration
 
@@ -110,15 +110,32 @@ Libraries like Vulkan headers or HarfBuzz (text shaping) are wrapped in custom C
 
 ## 6. GTK4 / Vulkan Integration Boundary
 
-To minimize custom UI work, Vaelix uses GTK4 for the shell while maintaining a high-performance Vulkan-based web rendering engine. This requires a clearly defined boundary.
+### 6.1 `GdkDmabufTextureBuilder` Implementation
 
-### 6.1 The "Viewport" Bridge
+Vaelix leverages modern GTK4 capabilities for zero-copy texture sharing.
 
-The web content area within the GTK4 window is a specialized `GtkWidget` (or a `GtkGLArea` wrapper) that acts as a consumer for frames produced by the out-of-process Vulkan renderer.
+1. **Allocation:** The GPU process allocates a `dmabuf` using `gbm` or `vulkan` external memory.
+2. **Export:** Export the FD and pass it to the UI process via `SCM_RIGHTS`.
+3. **Construction (UI Process):**
 
-- **Data Transfer:** Rendered frames are passed from the GPU Process to the UI Process using **DMA-BUF file descriptors** (on Linux) or shared GPU textures.
-- **Synchronization:** `Timeline Semaphores` are used to ensure the UI process only presents frames that have finished rendering, avoiding tearing and minimizing latency.
-- **Input Routing:** Mouse and keyboard events captured by GTK4 are serialized and sent over the `vaelix.ipc` channel to the appropriate Render process for handling.
+    ```cpp
+    GdkDmabufTextureBuilder* builder = gdk_dmabuf_texture_builder_new();
+    gdk_dmabuf_texture_builder_set_fd(builder, 0, dmabuf_fd);
+    gdk_dmabuf_texture_builder_set_width(builder, width);
+    gdk_dmabuf_texture_builder_set_height(builder, height);
+    gdk_dmabuf_texture_builder_set_fourcc(builder, DRM_FORMAT_XRGB8888);
+    GdkTexture* texture = gdk_dmabuf_texture_builder_build(builder, NULL, NULL);
+    ```
+
+4. **Presentation:** Use the `GdkTexture` in a `GtkPicture` or `GtkImage`.
+
+### 6.2 Input Routing (GTK4 -> Core)
+
+Mouse and keyboard events are captured by GTK and forwarded to the appropriate Render process.
+
+- **Event Serialization:** `GdkEvent` is converted into a `vaelix::ipc::InputEvent` struct.
+- **Async Forwarding:** The event is placed on the Render process's `io_uring` SQ via `eventfd` signaling.
+- **Latency Optimization:** Input events are marked with `HIGH_PRIORITY` to bypass background tasks in the Render process's scheduler.
 
 ### 6.2 Rendering Pipeline
 
@@ -133,4 +150,3 @@ The web content area within the GTK4 window is a specialized `GtkWidget` (or a `
 ### 6.3 Fallback Mechanism
 
 If the hardware doesn't support efficient DMA-BUF sharing, the system falls back to **SHM Pixel Buffers**, where the GPU process copies the frame to a shared memory region, and GTK4 uploads it as a `GdkTexture`.
-

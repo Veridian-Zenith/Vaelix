@@ -50,14 +50,59 @@ The Orchestrator initializes the sandbox *before* executing the specific compone
   - *Windows:* AppContainer isolation and Job Objects are utilized to restrict filesystem and network access.
 - **Phase 4: Execution:** The child process drops all privileges and begins executing the untrusted C++26 DOM/JS engine code.
 
-## 6. Execution Scheduling
+## 6. Execution Scheduling: The High-Performance Loop
 
-Vaelix moves away from traditional thread-per-tab models.
+Vaelix moves away from traditional thread-per-tab models. Every process runs a highly optimized loop driven by `io_uring` and `std::execution`.
 
-- **Global Task Graph:** Utilizing `std::execution`, work is represented as task graphs.
-- **Work Stealing:** Each process implements a work-stealing thread pool optimized for modern big.LITTLE CPU architectures (allocating heavy JS compilation to performance cores, and background GC to efficiency cores).
+### 6.1 The Core Loop Architecture
 
-## 7. Diagram: Orchestrator Flow
+The loop is designed to be syscall-free during normal operation (using `SQPOLL`).
+
+1. **Initialize `io_uring`:**
+
+    ```cpp
+    io_uring_params params{};
+    params.flags = IORING_SETUP_SQPOLL | IORING_SETUP_ATTACH_WQ;
+    params.sq_thread_idle = 1000; // 1ms idle before kernel thread sleeps
+    ring.init(QUEUE_DEPTH, &params);
+    ```
+
+2. **Register SHM Fixed Buffers:**
+
+    ```cpp
+    ring.register_buffers(shm_segments);
+    ```
+
+3. **Main Loop (C++26 Coroutine/Task Driven):**
+
+    ```cpp
+    while (active) {
+        // Step A: Reap completions from the CQ
+        // This triggers the 'receiver' of any completed 'sender'
+        ring.reap_and_dispatch();
+
+        // Step B: Run the std::execution scheduler
+        // This executes any ready tasks (e.g., JS callbacks, DOM updates)
+        scheduler.run_ready_tasks();
+
+        // Step C: Submission (Implicit via SQPOLL)
+        // New SQEs are placed by scheduler.submit_task()
+    }
+    ```
+
+### 6.2 Priority Management via `std::execution`
+
+- **Critical:** Mapped to high-priority P-Cores. Includes UI Input handling and IPC signaling.
+- **Normal:** Mapped to standard P-Cores. Includes DOM Tree updates and CSS styling.
+- **Background:** Mapped to E-Cores. Includes JS Garbage Collection and Telemetry.
+
+## 7. Zero-Copy Lifecycle (The Phoenix Pattern Refined)
+
+When a process crashes, its SHM segments are immediately reclaimed by the Orchestrator.
+
+1. **Detection:** Orchestrator's `io_uring` receives a `POLLHUP` on the child process's signaling FD.
+2. **Reclamation:** Orchestrator marks the associated SHM segment as "Stale" but keeps the memory mapping if a "Warm" process can reuse it.
+3. **Respawn:** The "Warm Standby" process is assigned the existing SHM segment, providing near-instant recovery.
 
 ```mermaid
 sequenceDiagram

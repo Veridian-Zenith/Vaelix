@@ -11,18 +11,20 @@ add_compile_options(-fmodules -fmodules-ts)
 
 # Hardening and Performance flags for Vaelix
 add_compile_options(
-    -O3
     -march=native
-    -flto=thin
-    -Wall
-    -Wextra
-    -Wpedantic
-    -fvisibility=hidden
-    -fstack-protector-strong
-)
+    -Oz
+    -pipe
+    -fno-plt
+    -rtlib=compiler-rt
+    -unwindlib=libunwind
+    -Wno-unused-variable
+    -Wno-unused-parameter
+    -Wno-unused-function
+    -std=c++26
+    )
 
 # Linker flags
-add_link_options(-flto=thin -Wl,--as-needed)
+add_link_options(-fuse-ld=lld -Wl,-O1,--as-needed,-z,relro,-z,now -Wl,--icf=all -Wl,--gc-sections -rtlib=compiler-rt -unwindlib=libunwind)
 
 # Dependencies
 find_package(PkgConfig REQUIRED)

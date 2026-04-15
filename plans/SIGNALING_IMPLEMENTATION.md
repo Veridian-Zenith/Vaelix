@@ -28,21 +28,61 @@ Vaelix implements a custom `std::execution::scheduler` backed by the `io_uring`.
 - When an IPC signal is needed, instead of blocking, the thread submits a write request to the `io_uring` SQ and returns immediately.
 - When an IPC signal is received, the `io_uring` Completion Queue (CQ) generates an event. A background thread reaping the CQ acts as the "executor," completing the associated `sender`.
 
-### 2.3 Example Workflow (Render -> GPU Process)
+### 2.4 GTK4 UI Signal Integration
 
-1. **Write to SHM:** The Render process writes a new display list into the zero-copy Shared Memory (SHM) arena.
-2. **Signal Intent:** The Render process needs to signal the GPU process. It creates a `sender` that represents the action of writing to the GPU process's `eventfd`.
-3. **Submit via io_uring:** The Render process submits this `sender` to its local `io_uring_scheduler`. The scheduler places a `IORING_OP_WRITE` operation onto the SQ. Because of `SQPOLL`, the kernel picks this up asynchronously without a syscall context switch.
-4. **Kernel Propagation:** The kernel writes to the `eventfd`, which is being polled by the GPU process's `io_uring` instance.
-5. **GPU Receive:** The GPU process's `io_uring` CQ receives a completion event indicating the `eventfd` was triggered.
-6. **Execution Triggered:** The GPU process's `io_uring_scheduler` reaps the CQ and triggers a `receiver`, immediately waking up the GPU compositing task to read the new display list from the SHM arena.
+To maintain 60+ FPS, GTK4 signals must never block on IPC.
 
-## 3. Batching and Coalescing
+#### The `GSource` Adapter
 
-To prevent signal storms:
+We create a custom `GSource` that allows the GTK `GMainContext` to poll the `io_uring` completion queue.
 
-- **Batched Submission:** Multiple IPC signals generated in a single frame or task tick are batched together on the Submission Queue and flushed at once.
-- **Signal Coalescing:** If multiple messages are written to the SHM arena before the target process has had a chance to wake up, the `eventfd` counter simply increments. The receiving process only wakes up once, reads the counter, and processes *all* pending messages in the SHM ring buffer in one sweep.
+```cpp
+struct IORingSource : GSource {
+    int ring_fd;
+    // ... custom dispatch logic
+};
+
+// In GSourceFuncs::prepare:
+// Check if io_uring CQ has pending entries without syscall
+// In GSourceFuncs::dispatch:
+// Call ring.reap_completions() and execute associated callbacks
+```
+
+#### Signal-to-Sender Flow
+
+1. **Event:** User clicks "Reload".
+2. **Callback:** `on_reload_clicked` is invoked by GTK.
+3. **Sender Creation:**
+
+    ```cpp
+    auto sender = vaelix::ipc::create_message_sender(
+        target_render_process,
+        MSG_RELOAD_PAGE
+    );
+    ```
+
+4. **Async Start:** The sender is attached to the `ui_scheduler` and "started" (`std::execution::start`). This places an SQE on the `io_uring`.
+5. **Non-Blocking Return:** The GTK callback returns immediately.
+
+## 3. Zero-Copy Buffer Management with io_uring
+
+To achieve peak performance, we register shared memory regions directly with the kernel.
+
+### 3.1 `io_uring_register_buffers`
+
+At process startup, once SHM segments are attached, we register them:
+
+- **Orchestrator:** Registers all active SHM segments used for process communication.
+- **Child Processes:** Register their specific command and data segments.
+
+### 3.2 `IORING_OP_READ_FIXED` / `IORING_OP_WRITE_FIXED`
+
+By using fixed buffers, the kernel maintains a long-term mapping of the pages, eliminating the overhead of looking up page tables on every IPC message.
+
+## 4. Signal Coalescing & Batching (Refined)
+
+- **UI Event Batching:** Multiple UI signals (e.g., mouse move) are coalesced before being sent as a single IPC message if they happen within the same GTK "tick".
+- **Completion Reaping:** When the `GSource` dispatches, it reaps *all* available completions in the CQ to minimize the number of times the GTK loop is interrupted.
 
 ## 4. Platform Fallbacks
 
