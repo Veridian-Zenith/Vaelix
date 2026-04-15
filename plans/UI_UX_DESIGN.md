@@ -14,32 +14,36 @@ The Vaelix UI aims to combine the nostalgic, high-fidelity visual depth of Windo
   - Error/Critical: Crimson Red (`#D22B2B`)
 - **Text:** High contrast Off-White (`#E0E0E0`) for primary text, dimmed gray (`#888888`) for secondary text.
 
-## 3. Aero-Glass Dark Implementation
+## 3. GTK4 & Aero-Glass Implementation
 
-- **Translucency & Blur:** Utilizing custom shaders to implement real-time Gaussian blur with an additive noise layer to simulate physical frosted glass.
+- **Framework:** **GTK4 with Libadwaita** for the shell architecture.
+- **Styling:** Custom CSS via `GtkCssProvider` to implement the Aero-glass effect.
+- **Translucency & Blur:**
+  - Utilizing GTK4's `GskRenderer` capabilities and potentially custom `GskRenderNode` for real-time background blur.
+  - On Linux, leveraging compositor features (via Wayland protocols or X11 atoms) to request window-level blur behind the GTK window.
 - **Lighting & Shadows:**
-  - Subtle drop shadows around overlapping UI elements.
-  - "Glow" effects triggered by mouse proximity (hover states) using the amber/orange accent colors.
-- **Borders:** Thin, semi-transparent borders with a slight specular highlight to define window and tab edges without being visually heavy.
+  - Standard Libadwaita shadows enhanced with custom CSS for "glow" effects.
+  - Amber/Orange (`#FF8C00`) accents applied via GTK's `@theme_selected_bg_color` and custom CSS classes.
+- **Borders:** Thin, semi-transparent borders defined in CSS (`rgba(255, 255, 255, 0.1)`).
 
-## 4. Key UI Components
+## 4. Key UI Components (GTK4 Widgets)
 
 ### 4.1 Tab Bar
 
-- Integrated tightly with the operating system window frame to maximize screen real-estate.
-- Tabs have a sleek, glass-like appearance that becomes more opaque when active.
-- Unloaded/Background tabs are visually dimmed.
+- Implemented using `AdwTabView` or a custom `GtkBox` containing glass-styled buttons.
+- Integrated tightly with the header bar (`AdwHeaderBar`).
+- Tabs use CSS transitions for opacity shifts when active/inactive.
 
 ### 4.2 Address/Omnibar
 
-- Floating, pill-shaped design with a slight inner shadow.
-- Highly responsive autocomplete suggestions with distinct typography for history vs. search results.
-- Built-in privacy indicators (Lock icon, tracker blockers) that glow amber when active.
+- Built using `GtkEntry` or `AdwEntryRow` with a custom "pill-shaped" CSS class.
+- Autocomplete suggestions presented in a `GtkPopover` or a custom `GtkListView` with Aero-blur backgrounds.
+- Privacy indicators using `GtkImage` with amber CSS filters.
 
 ### 4.3 Menus & Contexts
 
-- Right-click and main application menus feature the signature dark-glass blur.
-- High-performance custom rendering to ensure 0-millisecond latency upon interaction.
+- Standard GTK `GMenu` and `GtkPopover` components styled with custom CSS to match the Aero-Dark theme.
+- Ensures native accessibility and input handling while maintaining the signature visual style.
 
 ## 5. Quality of Life (QOL) Features
 
@@ -47,3 +51,4 @@ The Vaelix UI aims to combine the nostalgic, high-fidelity visual depth of Windo
 - **Keyboard Centric:** Full vim-like keybinding support out of the box (optional).
 - **Command Palette:** `Ctrl+Shift+P` (or similar) to access any browser setting or command instantly without clicking through menus.
 - **Resource Monitor:** A small, elegant status bar widget showing current RAM and CPU usage of the browser processes.
+

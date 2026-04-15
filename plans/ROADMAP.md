@@ -19,10 +19,11 @@
 - **Month 9-10:** Build the high-performance CSS layout engine with SIMD selector matching.
 - **Month 11-12:** Target the "Hacker News Milestone" (full rendering of simple websites).
 
-### Phase 4: VJS-MLIR & UI Engine (Months 13-18)
+### Phase 4: GTK4 Shell & Browser Integration (Months 13-18)
 
-- **Month 13-15:** Define the VJS-MLIR dialect and the AOT compilation pipeline for browser internal UI components.
-- **Month 16-18:** Port the browser UI (Aero-Dark theme) to the high-performance VJS-MLIR runtime.
+- **Month 13-14:** Develop the primary browser window, header bar, and tab management using **GTK4 and Libadwaita**.
+- **Month 15-16:** Implement the Aero-Dark CSS theme and integrate the command palette/settings UI.
+- **Month 17-18:** **Vulkan/GTK4 Boundary:** Implement the high-performance texture sharing bridge between the Vulkan Render processes and the GTK4 UI (using DMA-BUF/GtkGLArea).
 
 ### Phase 5: Security, Polish & Alpha (Months 19-24)
 

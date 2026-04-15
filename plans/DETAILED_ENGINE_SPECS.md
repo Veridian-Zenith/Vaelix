@@ -108,16 +108,29 @@ Libraries like Vulkan headers or HarfBuzz (text shaping) are wrapped in custom C
 
 ---
 
-## 5. The "Web Compatibility" Strategy
+## 6. GTK4 / Vulkan Integration Boundary
 
-### 5.1 Standard Parity
+To minimize custom UI work, Vaelix uses GTK4 for the shell while maintaining a high-performance Vulkan-based web rendering engine. This requires a clearly defined boundary.
 
-- Vaelix aims for full compliance with the Web Platform Tests (WPT) suite.
-- A dedicated CI pipeline will run subset WPTs on every commit to ensure regressions don't occur in the DOM or CSS layout engines.
+### 6.1 The "Viewport" Bridge
 
-### 5.2 The "Polyfill" Layer
+The web content area within the GTK4 window is a specialized `GtkWidget` (or a `GtkGLArea` wrapper) that acts as a consumer for frames produced by the out-of-process Vulkan renderer.
 
-For proprietary or deprecated web APIs that sites still rely on:
+- **Data Transfer:** Rendered frames are passed from the GPU Process to the UI Process using **DMA-BUF file descriptors** (on Linux) or shared GPU textures.
+- **Synchronization:** `Timeline Semaphores` are used to ensure the UI process only presents frames that have finished rendering, avoiding tearing and minimizing latency.
+- **Input Routing:** Mouse and keyboard events captured by GTK4 are serialized and sent over the `vaelix.ipc` channel to the appropriate Render process for handling.
 
-- Vaelix will inject a native C++ interceptor at the JS context level.
-- When legacy JS calls an unsupported API, the VJS engine routes it to a compatibility layer that simulates the behavior using modern standards, ensuring the browser doesn't crash on older websites without bloating the core engine with legacy code.
+### 6.2 Rendering Pipeline
+
+1. **Render Process:** Calculates layout, executes JS, and records Vulkan command buffers.
+2. **GPU Process:** Executes Vulkan commands, rendering to a backing store (DMA-BUF).
+3. **UI Process (GTK4):**
+   - Receives a signal that a new frame is ready.
+   - Updates its `GskRenderNode` to include the new texture.
+   - Composites the web content with the native GTK4 UI (tabs, address bar).
+   - Presents the final frame to the display.
+
+### 6.3 Fallback Mechanism
+
+If the hardware doesn't support efficient DMA-BUF sharing, the system falls back to **SHM Pixel Buffers**, where the GPU process copies the frame to a shared memory region, and GTK4 uploads it as a `GdkTexture`.
+
